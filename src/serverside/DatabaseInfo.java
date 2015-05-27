@@ -18,23 +18,10 @@ public class DatabaseInfo {
 	private String dbPassword;
 
 	public DatabaseInfo() {
-		Properties properties = new Properties();
-		try {
-			//InputStream inputstream = getClass().getResourceAsStream("servInfo.txt");
-			InputStream inputstream = new FileInputStream("dbInfo.txt");
-			properties.load(inputstream);
-			if (inputstream != null) {
-				inputstream.close();
-			}
-		} catch (FileNotFoundException e1) {
-			System.out.println("没找到 dbInfo.txt 文件!");
-		} catch (IOException e2) {
-			System.out.println("I/O Error!");
-		}
-		dbDriver = properties.getProperty("dbdriver");
-		dbURL = properties.getProperty("dburl");
-		dbUser = properties.getProperty("dbuser");
-		dbPassword = properties.getProperty("dbpwd");
+		dbDriver = "sun.jdbc.odbc.JdbcOdbcDriver";
+		dbURL = "jdbc:odbc:library";
+		dbUser = "book";
+		dbPassword = "book";
 	}
 
 	public String getDbDriver() {
