@@ -86,14 +86,11 @@ public class Library extends JFrame {
 		Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setSize(400, 260);
 		Dimension framesize = this.getSize();
-		int x = (int) screensize.getWidth() / 2 - (int) framesize.getWidth()
-				/ 2;
-		int y = (int) screensize.getHeight() / 2 - (int) framesize.getHeight()
-				/ 2;
+		int x = (int) screensize.getWidth() / 2 - (int) framesize.getWidth()/ 2;
+		int y = (int) screensize.getHeight() / 2 - (int) framesize.getHeight()/ 2;
 		this.setLocation(x, y);
 		ServerInfo serverInfo = new ServerInfo();
-		libClient = new LibClient(serverInfo.getHost(), serverInfo
-					.getPort());
+		libClient = new LibClient(serverInfo.getHost(), serverInfo.getPort());
 		buildGUI();
 		setVisible(true);
 	}
@@ -207,10 +204,11 @@ public class Library extends JFrame {
 	/**
 	 * 读者登陆
 	 */
-	private void handleReaderLogin(String readerID, String passwd) {
-		ReaderInfo readerInfo = (ReaderInfo) libClient.getName(
-				LibProtocals.OP_GET_READERINFO, readerID, passwd);
-		if (null == readerInfo.getName()) {
+	private void handleReaderLogin(String readerID, String passwd) 
+	{
+		ReaderInfo readerInfo = (ReaderInfo) libClient.getName(LibProtocals.OP_GET_READERINFO, readerID, passwd);
+		if (null == readerInfo.getName()) 
+		{
 			JOptionPane.showMessageDialog(null, "用户名或密码错误,请验证后重新登陆");
 			passwdField.setText("");
 			return;
@@ -229,10 +227,11 @@ public class Library extends JFrame {
 	 * 管理员登陆
 	 */
 
-	private void handleAdminLogin(String adminID, String passwd) {
-		LibraianInfo libInfo = (LibraianInfo) libClient.getName(
-				LibProtocals.OP_GET_LIBRAIANINFO, adminID, passwd);
-		if (null == libInfo.getName()) {
+	private void handleAdminLogin(String adminID, String passwd) 
+	{
+		LibraianInfo libInfo = (LibraianInfo) libClient.getName(LibProtocals.OP_GET_LIBRAIANINFO, adminID, passwd);
+		if (null == libInfo.getName()) 
+		{
 			JOptionPane.showMessageDialog(null, "用户名或密码错误,请验证后重新登陆");
 			passwdField.setText("");
 			return;
@@ -245,7 +244,8 @@ public class Library extends JFrame {
 		passwdField.setText("");
 		mainFrame = new MainFrame(this,libClient,libInfo);
 		// 图书维护
-		if (1 == libInfo.getBookp()) {
+		if (1 == libInfo.getBookp()) 
+		{
 			this.setVisible(false);
 			//借书还书lrMenu
 			mainFrame.lrMenu.setEnabled(true);			
@@ -254,14 +254,16 @@ public class Library extends JFrame {
 			mainFrame.setVisible(true);
 		}
 		// 读者维护
-		else if (1 == libInfo.getReaderp()) {
+		else if (1 == libInfo.getReaderp()) 
+		{
 			this.setVisible(false);
 			mainFrame.sysMaintainMenu.setEnabled(true);
 			mainFrame.sysMaintainMenu.add(mainFrame.readerMenuItem);
 			mainFrame.setVisible(true);
 		}
 		// 系统参数维护,超级管理员
-		else if (1 == libInfo.getParameterp()) {
+		else if (1 == libInfo.getParameterp()) 
+		{
 			this.setVisible(false);
 			mainFrame.sysMaintainMenu.setEnabled(true);
 			mainFrame.sysMaintainMenu.add(mainFrame.bookMenuItem);
@@ -269,7 +271,8 @@ public class Library extends JFrame {
 			mainFrame.sysMaintainMenu.add(mainFrame.librarianMenuItem);
 			mainFrame.sysMaintainMenu.add(mainFrame.paraMenuItem);
 			mainFrame.setVisible(true);
-		} else {
+		} else 
+		{
 			JOptionPane.showMessageDialog(null, "用户名或密码错误,请验证后重新登陆");
 			passwdField.setText("");
 		}
@@ -279,12 +282,16 @@ public class Library extends JFrame {
 	 * 管理员或者用户登陆
 	 * 
 	 */
-	class LogActionListener implements ActionListener {
-		public void actionPerformed(ActionEvent e) {
-			if(login==e.getSource()){
+	class LogActionListener implements ActionListener 
+	{
+		public void actionPerformed(ActionEvent e) 
+		{
+			if(login==e.getSource())
+			{
 				processLogin();
 			}
-			else if(reset==e.getSource()){
+			else if(reset==e.getSource())
+			{
 				readerAccount.setText("");
 				passwdField.setText("");
 			}
@@ -294,8 +301,10 @@ public class Library extends JFrame {
 	/**
 	 *单选按钮监听器。
 	 */
-	public class CheckboxItemListener implements ItemListener {
-		public void itemStateChanged(ItemEvent e) {
+	public class CheckboxItemListener implements ItemListener 
+	{
+		public void itemStateChanged(ItemEvent e) 
+		{
 			// 为不同的用户登录设置标志值。
 			if (adminBox.getState()) {
 				readerAccount.setEditable(true);
@@ -305,7 +314,8 @@ public class Library extends JFrame {
 				passwdField.setText("");
 				status = "libraian";
 			}
-			if (readerBox.getState()) {
+			if (readerBox.getState()) 
+			{
 				readerAccount.setEditable(true);
 				passwdField.setEditable(true);
 				reset.setEnabled(true);
@@ -313,7 +323,8 @@ public class Library extends JFrame {
 				passwdField.setText("");
 				status = "reader";
 			}
-			if (guestBox.getState()) {
+			if (guestBox.getState()) 
+			{
 
 				readerAccount.setEditable(false);
 				passwdField.setEditable(false);
@@ -326,11 +337,13 @@ public class Library extends JFrame {
 	}
 
 	// 键盘上的某个功能键被按下
-	class KeyBoardListener extends  KeyAdapter {
-
-		public void keyPressed(KeyEvent e) {
+	class KeyBoardListener extends  KeyAdapter 
+	{
+		public void keyPressed(KeyEvent e) 
+		{
 			// 获得键盘上某个键的键码表，该键被按下、敲击或者释放
-			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) 
+			{
 				// public char getKeyChar()判断那个键被按下、敲击或释放
 				// 该方法返回键盘上的字符
 				 processLogin();
@@ -341,8 +354,8 @@ public class Library extends JFrame {
 	/**
 	 * 处理登陆
 	 */
-	private void processLogin() {
-
+	private void processLogin() 
+	{
 		String ID = readerAccount.getText().trim();
 		if (null == ID || "".equals(ID.trim())) {
 			JOptionPane.showMessageDialog(null, "帐号不能为空");
@@ -355,15 +368,18 @@ public class Library extends JFrame {
 
 		String password = new String(passwdField.getPassword());
 		String pass = password.trim();
-		if (null==pass||"".equals(pass)) {
+		if (null==pass||"".equals(pass)) 
+		{
 			JOptionPane.showMessageDialog(null, "密码不能为空");
 			return;
 		}
-		if ("libraian" == status) {
+		if ("libraian" == status) 
+		{
 			log("管理员登陆");
 			handleAdminLogin(ID, pass);
 		}
-		if ("reader" == status) {
+		if ("reader" == status) 
+		{
 			log("读者登陆");
 			handleReaderLogin(ID, pass);
 			return;
@@ -375,12 +391,13 @@ public class Library extends JFrame {
 		}
 	}
 
-	protected void log(Object msg) {
-		System.out
-				.println(CurrDateTime.currDateTime() + "LoginDialog类: " + msg);
+	protected void log(Object msg) 
+	{
+		System.out.println(CurrDateTime.currDateTime() + "LoginDialog类: " + msg);
 	}
 
-	public static void main(String[] arg) {
+	public static void main(String[] arg) 
+	{
 		new Library();
 	}
 }
