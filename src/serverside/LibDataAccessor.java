@@ -12,6 +12,7 @@ import java.util.Date;
 import java.sql.*;
 
 import serverside.entity.BookDetails;
+import serverside.entity.LibraianInfo;
 import serverside.entity.ReaderInfo;
 
 public class LibDataAccessor {
@@ -134,6 +135,41 @@ public class LibDataAccessor {
 			e.printStackTrace();
 		}
 		return readerInfo;
+	}
+	
+	public Object getLibarianInfo(String libid, String pass) {
+		System.out.print("接收到--管理员Id:" + libid + "密码：" + pass);
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("con：");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		LibraianInfo libInfo = null;
+		System.out.print("libInfo：");
+		String sql = "select * from librarian where libraianid ='" + libid
+				+ "' and passwd = '" + pass + "'";
+		System.out.print("管理员登录："+sql);
+		try {
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				String name = rs.getString("name");
+				int bookp = rs.getInt("bookp");
+				int readerp = rs.getInt("readerp");
+				int parameterp = rs.getInt("parameterp");
+				libInfo = new LibraianInfo(libid, pass, name, bookp, readerp,
+						parameterp);
+				System.out.print("管理信息:" + libInfo.getBookp());
+			} else {
+				libInfo = new LibraianInfo();
+			}
+			System.out.print("管理员信息：姓名 "+libInfo.getName());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return libInfo;
 	}
 }
 
