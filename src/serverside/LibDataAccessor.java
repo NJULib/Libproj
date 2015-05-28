@@ -12,6 +12,7 @@ import java.util.Date;
 import java.sql.*;
 
 import serverside.entity.BookDetails;
+import serverside.entity.ReaderInfo;
 
 public class LibDataAccessor {
 	private Connection con = null;
@@ -87,4 +88,53 @@ public class LibDataAccessor {
 			return bookDataList;
 		}
 	}
+	
+	//读者登录查找数据库
+	public ReaderInfo getReaderInfo(String readerID, String pass) {
+		System.out.print("接收到：" + readerID);
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("con：");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		ReaderInfo readerInfo = null;// = new ReaderInfo();
+		System.out.print("readerInfo：");
+		String sql = null;
+		if(null!=pass){
+			if("nullpass".equals(pass.trim())){
+				sql= "select * from reader where readerid ='" + readerID + "'";
+			}else{
+				sql= "select * from reader where readerid ='" + readerID + "' and  passwd = '" + pass + "'";
+			}
+		}
+		System.out.print(sql);
+		try {
+			Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery(sql);
+			if (rs.next()) {
+				String name = rs.getString("name");
+				Integer age = rs.getInt("age");
+				String gender = rs.getString("gender");
+				String address = rs.getString("address");
+				String tel = rs.getString("tel");
+				String startdate = rs.getString("startdate");
+				String enddate = rs.getString("enddate");
+				int type = rs.getInt("type");
+				String major = rs.getString("major");
+				String depart = rs.getString("depart");
+				readerInfo = new ReaderInfo(readerID, pass, name, age, gender,
+						address, tel, startdate, enddate, type, major, depart);
+
+			} else{
+				readerInfo = new ReaderInfo();
+			}
+			System.out.print("读者："+readerInfo.getName());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return readerInfo;
+	}
 }
+
+
