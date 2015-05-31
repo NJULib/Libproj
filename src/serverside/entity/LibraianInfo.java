@@ -4,16 +4,16 @@ import java.io.Serializable;
 
 public class LibraianInfo implements Serializable{
 	/**
-	 * ç®¡ç†å‘˜ä¿¡æ¯ï¼Œç¼–å·ã€å§“åã€å¯†ç ã€æƒé™ï¼ˆä¸º1æ—¶è¡¨ç¤ºæ‹¥æœ‰æƒé™)
+	 * ¹ÜÀíÔ±ĞÅÏ¢£¬±àºÅ¡¢ĞÕÃû¡¢ÃÜÂë¡¢È¨ÏŞ£¨Îª1Ê±±íÊ¾ÓµÓĞÈ¨ÏŞ)
 	 */
 	private static final long serialVersionUID = 1L;
-	private String libraianid;		//ç®¡ç†å‘˜ç¼–å·
+	private String libraianid;		//¹ÜÀíÔ±±àºÅ
 	
-	private String passwd;			//ç®¡ç†å‘˜å¯†ç 
-	private String name;			//ç®¡ç†å‘˜å§“å
-	private int bookp;				//å›¾ä¹¦ç»´æŠ¤æƒé™
-	private int readerp;			//è¯»è€…ç»´æŠ¤æƒé™
-	private int parameterp;			//å‚æ•°ç»´æŠ¤ç»´æŠ¤æƒé™
+	private String passwd;			//¹ÜÀíÔ±ÃÜÂë
+	private String name;			//¹ÜÀíÔ±ĞÕÃû
+	private int bookp;				//Í¼ÊéÎ¬»¤È¨ÏŞ
+	private int readerp;			//¶ÁÕßÎ¬»¤È¨ÏŞ
+	private int parameterp;			//²ÎÊıÎ¬»¤Î¬»¤È¨ÏŞ
 	public LibraianInfo(){}
 	public LibraianInfo(String libid,String passwd, String name,int bookp,int readerp,int parameterp) {
 		this.libraianid = libid;

@@ -7,8 +7,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * ç”¨äºè¯»è¿æ¥æ•°æ®åº“æ—¶æ‰€ç”¨åˆ°çš„æœ‰å…³å‚æ•°ï¼Œå¦‚
- * æ•°æ®åº“çš„é©±åŠ¨ç¨‹åºã€æ•°æ®åº“æ‰€åœ¨ä¸»æœºçš„URLã€ç”¨äºè¿æ¥æ•°æ®åº“çš„ç”¨æˆ·åã€å¯†ç 
+ * ÓÃÓÚ¶ÁÁ¬½ÓÊı¾İ¿âÊ±ËùÓÃµ½µÄÓĞ¹Ø²ÎÊı£¬Èç
+ * Êı¾İ¿âµÄÇı¶¯³ÌĞò¡¢Êı¾İ¿âËùÔÚÖ÷»úµÄURL¡¢ÓÃÓÚÁ¬½ÓÊı¾İ¿âµÄÓÃ»§Ãû¡¢ÃÜÂë
  */
 public class DatabaseInfo {
 
@@ -18,10 +18,23 @@ public class DatabaseInfo {
 	private String dbPassword;
 
 	public DatabaseInfo() {
-		dbDriver = "sun.jdbc.odbc.JdbcOdbcDriver";
-		dbURL = "jdbc:odbc:library";
-		dbUser = "book";
-		dbPassword = "book";
+		Properties properties = new Properties();
+		try {
+			//InputStream inputstream = getClass().getResourceAsStream("servInfo.txt");
+			InputStream inputstream = new FileInputStream("dbInfo.txt");
+			properties.load(inputstream);
+			if (inputstream != null) {
+				inputstream.close();
+			}
+		} catch (FileNotFoundException e1) {
+			System.out.println("Ã»ÕÒµ½ dbInfo.txt ÎÄ¼ş!");
+		} catch (IOException e2) {
+			System.out.println("I/O Error!");
+		}
+		dbDriver = properties.getProperty("dbdriver");
+		dbURL = properties.getProperty("dburl");
+		dbUser = properties.getProperty("dbuser");
+		dbPassword = properties.getProperty("dbpwd");
 	}
 
 	public String getDbDriver() {

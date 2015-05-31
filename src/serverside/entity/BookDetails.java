@@ -1,23 +1,23 @@
 package serverside.entity;
 
 /**
- * æè¿°å›¾ä¹¦è¯¦ç»†ä¿¡æ¯ï¼Œå¦‚å›¾ä¹¦çš„ä¹¦åã€å‡ºç‰ˆç¤¾ã€ä½œè€…ã€å¼€æœ¬ã€æ‰€å±ä¸›ä¹¦ã€å®šä»·ã€é¡µæ•°ã€å†…å®¹æ‘˜è¦ç­‰ã€‚
+ * ÃèÊöÍ¼ÊéÏêÏ¸ĞÅÏ¢£¬ÈçÍ¼ÊéµÄÊéÃû¡¢³ö°æÉç¡¢×÷Õß¡¢¿ª±¾¡¢ËùÊô´ÔÊé¡¢¶¨¼Û¡¢Ò³Êı¡¢ÄÚÈİÕªÒªµÈ¡£
  */
 public class BookDetails implements java.io.Serializable {
 	
 	private static final long serialVersionUID = -8792355134417983448L;
 	
-	private String isbn; // ISBNå·
-	private String name; // ä¹¦å
-	private String series; // ä¸›ä¹¦å
-	private String authors; // ä½œè€…
-	private String publisher; // å‡ºç‰ˆä¿¡æ¯,åŒ…æ‹¬å‡ºç‰ˆåœ°ç‚¹ã€å‡ºç‰ˆç¤¾åã€å‡ºç‰ˆæ—¥æœŸ
-	private String size; // å›¾ä¹¦å¼€æœ¬
-	private int pages; // é¡µæ•°
-	private double price; // å®šä»·
-	private String introduction; // å›¾ä¹¦ç®€ä»‹
-	private String picture; // å°é¢å›¾ç‰‡
-	private String clnum; // å›¾ä¹¦åˆ†ç±»å·
+	private String isbn; // ISBNºÅ
+	private String name; // ÊéÃû
+	private String series; // ´ÔÊéÃû
+	private String authors; // ×÷Õß
+	private String publisher; // ³ö°æĞÅÏ¢,°üÀ¨³ö°æµØµã¡¢³ö°æÉçÃû¡¢³ö°æÈÕÆÚ
+	private String size; // Í¼Êé¿ª±¾
+	private int pages; // Ò³Êı
+	private double price; // ¶¨¼Û
+	private String introduction; // Í¼Êé¼ò½é
+	private String picture; // ·âÃæÍ¼Æ¬
+	private String clnum; // Í¼Êé·ÖÀàºÅ
 
 	public BookDetails() {
 	}

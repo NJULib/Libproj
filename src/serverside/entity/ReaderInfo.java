@@ -7,21 +7,21 @@ public class ReaderInfo implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private String readid;		//è¯»è€…ç¼–å·
-	private String passwd;		//å¯†ç 
-	private String name;		//å§“å
-	private Integer age;			//å¹´é¾„
+	private String readid;		//¶ÁÕß±àºÅ
+	private String passwd;		//ÃÜÂë
+	private String name;		//ĞÕÃû
+	private Integer age;			//ÄêÁä
 	
-	private String gender;		//æ€§åˆ«
-	private String address;		//å®¶åº­ä½å€
-	private String tel;			//è”ç³»ç”µè¯
-	private String startdate;	//å¼€æˆ·æ—¥æœŸ
-	private String enddate;		//å¸æˆ·åˆ°æœŸæ—¶é—´
-	private Integer type;		//è¯»è€…ç±»å‹
-	private String major;		//ä¸“ä¸š
+	private String gender;		//ĞÔ±ğ
+	private String address;		//¼ÒÍ¥×¡Ö·
+	private String tel;			//ÁªÏµµç»°
+	private String startdate;	//¿ª»§ÈÕÆÚ
+	private String enddate;		//ÕÊ»§µ½ÆÚÊ±¼ä
+	private Integer type;		//¶ÁÕßÀàĞÍ
+	private String major;		//×¨Òµ
 	
 
-	private String depart;	//éƒ¨é—¨æˆ–è€…æ˜¯é™¢ç³»
+	private String depart;	//²¿ÃÅ»òÕßÊÇÔºÏµ
 	//public ReaderInfo(String a){}
 	public ReaderInfo(){}
 	public ReaderInfo(String readid,String passwd,String name,Integer age,String gender,String address,String tel,String startdate,String enddate,Integer type,String major,String depart){
