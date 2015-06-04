@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-/**
- * 用于读连接数据库时所用到的有关参数，如
- * 数据库的驱动程序、数据库所在主机的URL、用于连接数据库的用户名、密码
- */
+
 public class DatabaseInfo {
 
 	private String dbDriver;
@@ -27,7 +24,7 @@ public class DatabaseInfo {
 				inputstream.close();
 			}
 		} catch (FileNotFoundException e1) {
-			System.out.println("没找到 dbInfo.txt 文件!");
+			System.out.println("没锟揭碉拷 dbInfo.txt 锟侥硷拷!");
 		} catch (IOException e2) {
 			System.out.println("I/O Error!");
 		}

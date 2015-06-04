@@ -1,5 +1,10 @@
 package serverside;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -10,16 +15,10 @@ import serverside.entity.BookDetails;
 import serverside.entity.BookInLibrary;
 import serverside.entity.BorrowInfo;
 import serverside.entity.LibraianInfo;
-import serverside.entity.ParameterInfo;
 import serverside.entity.ReaderInfo;
-import util.CurrDateTime;
 import util.DaysInterval;
 
-/**
- * Êı¾İ´æÈ¡Æ÷£¬ÓÃÓÚ´ÓÊı¾İ¿âÖĞ¶ÁÈ¡Ïà¹ØĞÅÏ¢
- */
 public class LibDataAccessor {
-
 	private Connection con = null;
 	private Statement stmt = null;
 	// private ResultSet rs = null;
@@ -37,21 +36,16 @@ public class LibDataAccessor {
 		try {
 			Class.forName(dbDriver);
 		} catch (ClassNotFoundException e) {
-			log("ÕÒ²»µ½Êı¾İ¿âÇı¶¯³ÌĞò");
+			System.out.print("æ‰¾ä¸åˆ°æ•°æ®åº“é©±åŠ¨ç¨‹åº");
 		}
 	}
-
-	/**
-	 * ·½·¨Ò»£º¸ù¾İÖ¸¶¨Ìõ¼şÈ¡µÃÊé¼®µÄÏêÏ¸ĞÅÏ¢
-	 * 
-	 * @param args
-	 */
+	
 	public List getBookDetails(String theField, String theKeyword) {
 		List bookDataList = null;
 		try {
 			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
 		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
 		}
 		try {
 			stmt = con.createStatement();
@@ -61,17 +55,17 @@ public class LibDataAccessor {
 			ResultSet rs = stmt.executeQuery(pSql);
 			bookDataList = new ArrayList();
 			BookDetails bookDetails;
-			String isbn; // ISBNºÅ
-			String name; // ÊéÃû
-			String series; // ´ÔÊéÃû
-			String authors; // ×÷Õß
-			String publisher; // ³ö°æĞÅÏ¢,°üÀ¨³ö°æµØµã¡¢³ö°æÉçÃû¡¢³ö°æÈÕÆÚ
-			String size; // Í¼Êé¿ª±¾
-			int pages; // Ò³Êı
-			double price; // ¶¨¼Û
-			String introduction; // Í¼Êé¼ò½é
-			String picture; // ·âÃæÍ¼Æ¬
-			String clnum; // Í¼Êé·ÖÀàºÅ
+			String isbn; // ISBNå·
+			String name; // ä¹¦å
+			String series; // ä¸›ä¹¦å
+			String authors; // ä½œè€…
+			String publisher; // å‡ºç‰ˆä¿¡æ¯,åŒ…æ‹¬å‡ºç‰ˆåœ°ç‚¹ã€å‡ºç‰ˆç¤¾åã€å‡ºç‰ˆæ—¥æœŸ
+			String size; // å›¾ä¹¦å¼€æœ¬
+			int pages; // é¡µæ•°
+			double price; // å®šä»·
+			String introduction; // å›¾ä¹¦ç®€ä»‹
+			String picture; // å°é¢å›¾ç‰‡
+			String clnum; // å›¾ä¹¦åˆ†ç±»å·
 			while (rs.next()) {
 				isbn = rs.getString("isbn");
 				name = rs.getString("name");
@@ -94,242 +88,22 @@ public class LibDataAccessor {
 			con.close();
 			return bookDataList;
 		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
+			System.out.print("æ•°æ®åº“è¯»å¼‚å¸¸ï¼Œ" + e1);
 			return bookDataList;
 		}
 	}
-
-	/**
-	 * ·½·¨¶ş£ºÈ¡µÃÍ¼ÊéµÄ¹İ²ØĞÅÏ¢
-	 * 
-	 * @param isbn
-	 * @return
-	 */
-	public List getBookLibInfo(String isbn) {
-		List bookLibList = null;
-		ResultSet rs = null;
-		log("Ö´ĞĞ²é¿´¹İ²ØÍ¼Êé");
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("½¨Á¢Á¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String pSql = "SELECT * FROM bookinfo WHERE bookinfo.isbn like '%"
-					+ isbn + "%' ";
-			log(pSql);
-			rs = stmt.executeQuery(pSql);
-			bookLibList = new ArrayList();
-			BookInLibrary bookInLibrary = null;
-			String barCode; // Í¼ÊéÌõĞÎÂë
-			int status; // ÊÇ·ñÔÚ¹İ,1£ºÔÚ£¬0£º²»ÔÚ
-			String location; // ¹İ²ØÎ»ÖÃ
-			String dueReturnDate; // Ó¦»¹ÈÕÆÚ
-
-			while (rs.next()) // Êä³öÃ¿Ìõ¼ÇÂ¼
-			{
-				log("shu");
-				barCode = rs.getString("barcode");
-				log(barCode);
-				status = rs.getInt("status");
-				log(status);
-				location = rs.getString("location");
-				log(location);
-				dueReturnDate =rs.getString("duedate");
-				log(dueReturnDate);
-				bookInLibrary = new BookInLibrary(barCode, status, location,
-						dueReturnDate);
-				log(bookInLibrary.getDueReturnDate());
-				bookLibList.add(bookInLibrary);
-			}
-			rs.close();
-			stmt.close();
-			con.close();
-			return bookLibList;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-			return bookLibList;
-		}
-	}
-
-	/**
-	 * ·½·¨Èı£ºÈ¡µÃÓÃ»§µÄ½èÔÄĞÅÏ¢, °üÀ¨ËùÓĞ½èÔÄĞÅÏ¢ ÀúÊ·½èÔÄĞÅÏ¢ µ±Ç°½èÔÄĞÅÏ¢
-	 */
-	public List[] getBorrowInfo(String readerID) {
-		// ½¨Á¢¾ßÓĞÁ½¸ölistµÄÁĞ±í
-		List borrowDataList[] = new ArrayList[2];
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		// ²éÑ¯ÏÖÔÚµÄ½èÔÄĞÅÏ¢
-		String borrowSql = "select * from lendinfo where lendinfo.readerid = '"
-				+ readerID + "' and lendinfo.returndate is null";
-		log("²éÑ¯µ±Ç°½èÔÄĞÅÏ¢£º" + borrowSql);
-		// ²éÑ¯ÀúÊ·½èÔÄĞÅÏ¢
-		String historySql = "select * from lendinfo where lendinfo.readerid = '"
-				+ readerID + "' and lendinfo.returndate is not null";
-		log("²éÑ¯ÀúÊ·½èÔÄĞÅÏ¢£º" + historySql);
-		/**
-		 * 1.##################################################. µ±Ç°µÄ½èÔÄĞÅÏ¢
-		 */
-		BorrowInfo borrowInfo = null;
-		ResultSet rs1 = null;
-		try {
-			rs1 = stmt.executeQuery(borrowSql);
-			borrowDataList[0] = new ArrayList();
-			log("×¼±¸´Ó½á¹û¼¯rs1ÖĞÈ¡Êı¾İ£º");
-			while (rs1.next()) {
-				String readerid = rs1.getString("readerid");
-				String bookcode = rs1.getString("bookcode");
-				Date borrowDate = rs1.getDate("borrowdate");
-				Date dueDate = rs1.getDate("duedate");
-				String  returnDate = rs1.getString ("returndate");
-				int renew = rs1.getInt("renew");
-				int overdays = DaysInterval.getDays(new Date(), dueDate);
-				if (overdays > 0) {
-					// ¶ÁÕß²éÑ¯×Ô¼ºµÄ¸öÈË½èÔÄĞÅÏ¢Ê±£¬ÅĞ¶ÏÊÇ·ñ³¬ÆÚ£¬Èô³¬ÆÚÔò½«È¡ÏµÍ³Ê±¼äÀ´¸üĞÂlendinfo±í£¬µÃ³ö³¬ÆÚµÄÌìÊı
-					String overdaySql = "update lendinfo set overduedays ='"
-							+ overdays + "' where readerid = '" + readerid
-							+ "' and bookcode = '" + bookcode + "'";
-					Statement upstmt = con.createStatement();
-					upstmt.executeUpdate(overdaySql);
-					if (null == upstmt) {
-						upstmt.close();
-					}
-				}
-				borrowInfo = new BorrowInfo(readerid, bookcode, borrowDate,
-						dueDate, returnDate, renew, overdays);
-				log("³¬ÆÚÌìÊı" + borrowInfo.getOverduedays());
-				borrowDataList[0].add(borrowInfo);
-			}
-			log("¶ÁÕßµ±Ç°½èÔÄÍ¼Êé£º" + borrowDataList[0].size() + "±¾");
-		} catch (SQLException e) {
-			log("¶ÁÈ¡µ±Ç°½èÔÄÍ¼ÊéĞÅÏ¢´íÎó£º" + e.getMessage());
-		} finally {
-			try {
-				rs1.close();
-			} catch (SQLException e) {
-				log("¹Ø±Õ½á¹û¼¯rs1´íÎó£º" + e.getMessage());
-			}
-		}
-
-		/**
-		 * 2.ÀúÊ·½èÔÄĞÅÏ¢
-		 */
-		ResultSet rs2 = null;
-		try {
-			rs2 = stmt.executeQuery(historySql);
-			borrowDataList[1] = new ArrayList();
-			log("×¼±¸´Ó½á¹û¼¯rs2ÖĞÈ¡Êı¾İ£º");
-			while (rs2.next()) {
-				String readerid = rs2.getString("readerid");
-				String bookcode = rs2.getString("bookcode");
-				Date borrowDate = rs2.getDate("borrowdate");
-				Date dueDate = rs2.getDate("duedate");
-				String  returnDate = rs2.getString ("returndate");
-				int renew = rs2.getInt("renew");
-				int overDueDays = rs2.getInt("overduedays");
-				double finedMoney = rs2.getDouble("fine");
-				borrowInfo = new BorrowInfo(readerid, bookcode, borrowDate,
-						dueDate, returnDate, renew, overDueDays, finedMoney);
-				borrowDataList[1].add(borrowInfo);
-			}
-			log("³¬ÆÚÍ¼Êé£º" + borrowDataList[0].size() + "±¾");
-
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-		} finally {
-			try {
-				rs2.close();
-			} catch (SQLException e) {
-				log("¹Ø±Õ½á¹û¼¯rs2³ö´í£º" + e.getMessage());
-			}
-		}
-		if (stmt != null) {
-			try {
-				stmt.close();
-			} catch (SQLException e) {
-				log("¹Ø±Õ´¦ÀíÓï¾ästmt³ö´í£º" + e.getMessage());
-			}
-		}
-		if (con != null) {
-			try {
-				con.close();
-			} catch (SQLException e) {
-				log("¹Ø±ÕÊı¾İ¿âÁ¬½Ócon³ö´í£º" + e.getMessage());
-			}
-		}
-		return borrowDataList;
-	}
-
-	/**
-	 * ·½·¨ËÄ£º¸ù¾İ¹ÜÀíÔ±µÄIDºÍÃÜÂë²éÑ¯ÓÃ»§ÊÇ·ñ´æÔÚ£¬´æÔÚÔò·µ»ØËüµÄÓÃ»§Ãû
-	 * 
-	 * @param libid
-	 * @param pass
-	 * @return
-	 */
-	public Object getLibarianInfo(String libid, String pass) {
-		log("½ÓÊÕµ½--¹ÜÀíÔ±Id:" + libid + "ÃÜÂë£º" + pass);
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("con£º");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		LibraianInfo libInfo = null;
-		log("libInfo£º");
-		String sql = "select * from librarian where libraianid ='" + libid
-				+ "' and passwd = '" + pass + "'";
-		log("¹ÜÀíÔ±µÇÂ¼£º"+sql);
-		try {
-			stmt = con.createStatement();
-			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
-				String name = rs.getString("name");
-				int bookp = rs.getInt("bookp");
-				int readerp = rs.getInt("readerp");
-				int parameterp = rs.getInt("parameterp");
-				libInfo = new LibraianInfo(libid, pass, name, bookp, readerp,
-						parameterp);
-				log("¹ÜÀíĞÅÏ¢:" + libInfo.getBookp());
-			} else {
-				libInfo = new LibraianInfo();
-			}
-			log("¹ÜÀíÔ±ĞÅÏ¢£ºĞÕÃû "+libInfo.getName());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return libInfo;
-	}
-
-	/**
-	 * ·½·¨Îå£º¸ù¾İ¶ÁÕßµÄµÄIDºÍÃÜÂë²éÑ¯ÓÃ»§ÊÇ·ñ´æÔÚ£¬´æÔÚÔò·µ»ØËüµÄÓÃ»§Ãû
-	 * 
-	 * @param readerID
-	 * @param pass
-	 * @return
-	 */
+	
+	//è¯»è€…ç™»å½•æŸ¥æ‰¾æ•°æ®åº“
 	public ReaderInfo getReaderInfo(String readerID, String pass) {
-		log("½ÓÊÕµ½£º" + readerID);
+		System.out.print("æ¥æ”¶åˆ°ï¼š" + readerID);
 		try {
 			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("con£º");
+			System.out.print("conï¼š");
 		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
 		}
 		ReaderInfo readerInfo = null;// = new ReaderInfo();
-		log("readerInfo£º");
+		System.out.print("readerInfoï¼š");
 		String sql = null;
 		if(null!=pass){
 			if("nullpass".equals(pass.trim())){
@@ -338,7 +112,7 @@ public class LibDataAccessor {
 				sql= "select * from reader where readerid ='" + readerID + "' and  passwd = '" + pass + "'";
 			}
 		}
-		log(sql);
+		System.out.print(sql);
 		try {
 			Statement st = con.createStatement();
 			ResultSet rs = st.executeQuery(sql);
@@ -359,26 +133,58 @@ public class LibDataAccessor {
 			} else{
 				readerInfo = new ReaderInfo();
 			}
-			log("¶ÁÕß£º"+readerInfo.getName());
+			System.out.print("è¯»è€…ï¼š"+readerInfo.getName());
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		return readerInfo;
 	}
-
-	/**
-	 * ·½·¨Áù£ºÈ¡µÃËùÓĞÊé¼®µÄÏêÏ¸ĞÅÏ¢
-	 */
+	
+	public Object getLibarianInfo(String libid, String pass) {
+		System.out.print("æ¥æ”¶åˆ°--ç®¡ç†å‘˜Id:" + libid + "å¯†ç ï¼š" + pass);
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("conï¼š");
+		} catch (SQLException ee) {
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
+		}
+		LibraianInfo libInfo = null;
+		System.out.print("libInfoï¼š");
+		String sql = "select * from librarian where libraianid ='" + libid
+				+ "' and passwd = '" + pass + "'";
+		System.out.print("ç®¡ç†å‘˜ç™»å½•ï¼š"+sql);
+		try {
+			stmt = con.createStatement();
+			rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				String name = rs.getString("name");
+				int bookp = rs.getInt("bookp");
+				int readerp = rs.getInt("readerp");
+				int parameterp = rs.getInt("parameterp");
+				libInfo = new LibraianInfo(libid, pass, name, bookp, readerp,
+						parameterp);
+				System.out.print("ç®¡ç†ä¿¡æ¯:" + libInfo.getBookp());
+			} else {
+				libInfo = new LibraianInfo();
+			}
+			System.out.print("ç®¡ç†å‘˜ä¿¡æ¯ï¼šå§“å "+libInfo.getName());
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return libInfo;
+	}
+	
 	public List getBooksInfos(String str) {
 		List list = new ArrayList();
 		String sql = null;
 		BookDetails bookDetails = null;
-		log("½ÓÊÕµ½£º" + str);
+		System.out.print("æ¥æ”¶åˆ°ï¼š" + str);
 		try {
 			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("con£º");
+			System.out.print("conï¼š");
 		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
 		}
 		try {
 			if ("all".equals(str)) {
@@ -393,7 +199,7 @@ public class LibDataAccessor {
 						+ "%' or introduction like '%" + str
 						+ "%' or clnum like '%" + str + "%'";
 			}
-			log(sql);
+			System.out.print(sql);
 			Statement st = con.createStatement();
 			ResultSet rs = st.executeQuery(sql);
 			while (rs.next()) {
@@ -410,9 +216,9 @@ public class LibDataAccessor {
 				String picture = rs.getString("picture");
 				String clnum = rs.getString("clnum");
 				/**
-				 * log("ÊéÃû£º"+name+"´ÔÊéºÅ£º"+series+"×÷Õß£º"+authors+"³ö°æÉç£º"+publisher+
-				 * "¿ª±¾£º"
-				 * +size+"Ò³Âë£º"+pages+"¼Û¸ñ£º"+price+"³ö°æËµÃ÷£º"+introduction+"¼ò½é£º"+
+				 * log("ä¹¦åï¼š"+name+"ä¸›ä¹¦å·ï¼š"+series+"ä½œè€…ï¼š"+authors+"å‡ºç‰ˆç¤¾ï¼š"+publisher+
+				 * "å¼€æœ¬ï¼š"
+				 * +size+"é¡µç ï¼š"+pages+"ä»·æ ¼ï¼š"+price+"å‡ºç‰ˆè¯´æ˜ï¼š"+introduction+"ç®€ä»‹ï¼š"+
 				 * clnum);
 				 */
 				bookDetails = new BookDetails(isbn, name, series, authors,
@@ -425,1515 +231,163 @@ public class LibDataAccessor {
 		}
 		return list;
 	}
-
-	/**
-	 * ·½·¨Æß£ºÈ¡µÃ¶ÁÕßµÄÏêÏ¸ĞÅÏ¢
-	 * 
-	 * @param msg
-	 */
-	public List getReadersInfos(String str) {
-		List list = new ArrayList();
-		String sql = null;
-		ReaderInfo readerInfo = null;
-		log("½ÓÊÕµ½£º" + str);
+	
+	public List getBookLibInfo(String isbn) {
+		List bookLibList = null;
+		ResultSet rs = null;
+		System.out.print("æ‰§è¡ŒæŸ¥çœ‹é¦†è—å›¾ä¹¦");
 		try {
 			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("con£º");
+			System.out.print("å»ºç«‹è¿æ¥æˆåŠŸ");
 		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
 		}
 		try {
-			if ("all".equals(str)) {
-				sql = "select * from reader";
-			} else {
-				sql = "select * from reader where readerid like '%" + str
-						+ "%' or name like '%" + str + "%' or gender like '%"
-						+ str + "%' or address like '%" + str
-						+ "%' or tel like '%" + str + "%' or startdate like '%"
-						+ str + "%' or enddate  like '%" + str
-						+ "%' or type like '%" + str + "%'";
+			stmt = con.createStatement();
+			String pSql = "SELECT * FROM bookinfo WHERE bookinfo.isbn like '%"
+					+ isbn + "%' ";
+			System.out.print(pSql);
+			rs = stmt.executeQuery(pSql);
+			bookLibList = new ArrayList();
+			BookInLibrary bookInLibrary = null;
+			String barCode; // å›¾ä¹¦æ¡å½¢ç 
+			int status; // æ˜¯å¦åœ¨é¦†,1ï¼šåœ¨ï¼Œ0ï¼šä¸åœ¨
+			String location; // é¦†è—ä½ç½®
+			String dueReturnDate; // åº”è¿˜æ—¥æœŸ
+
+			while (rs.next()) // è¾“å‡ºæ¯æ¡è®°å½•
+			{
+				System.out.print("shu");
+				barCode = rs.getString("barcode");
+				System.out.print(barCode);
+				status = rs.getInt("status");
+				System.out.print(status);
+				location = rs.getString("location");
+				System.out.print(location);
+				dueReturnDate =rs.getString("duedate");
+				System.out.print(dueReturnDate);
+				bookInLibrary = new BookInLibrary(barCode, status, location,
+						dueReturnDate);
+				System.out.print(bookInLibrary.getDueReturnDate());
+				bookLibList.add(bookInLibrary);
 			}
-			log("¶ÁÕßSQL£º" + sql);
-			Statement st = con.createStatement();
-			ResultSet rs = st.executeQuery(sql);
-			while (rs.next()) {
-				String readerid = rs.getString("readerid"); // ¶ÁÕß±àºÅ
-				String passwd = rs.getString("passwd"); // ÃÜÂë
-				String name = rs.getString("name"); // ĞÕÃû
-				Integer age = rs.getInt("age");
-				String gender = rs.getString("gender"); // ĞÔ±ğ
-				String address = rs.getString("address"); // ×¡Ö·
-				String tel = rs.getString("tel"); // µç»°
-				String startdate = rs.getString("startdate"); // ¿ª»§ÈÕÆÚ
-				String enddate = rs.getString("enddate"); // ½áÊøÈÕÆÚ
-				String strtype = rs.getString("type"); // ¶ÁÕßÀàĞÍ
-				int type = Integer.parseInt(strtype); //
-				String major = rs.getString("major");
-				String depart = rs.getString("depart");
-				readerInfo = new ReaderInfo(readerid, passwd, name, age,
-						gender, address, tel, startdate, enddate, type, major,
-						depart);
-				log("¶ÁÕß£º"+readerInfo.getName());
-				list.add(readerInfo);
-			}
+			rs.close();
+			stmt.close();
+			con.close();
+			return bookLibList;
+		} catch (SQLException e1) {
+			System.out.print("æ•°æ®åº“è¯»å¼‚å¸¸ï¼Œ" + e1);
+			return bookLibList;
+		}
+	}
+	
+	public List[] getBorrowInfo(String readerID) {
+		// å»ºç«‹å…·æœ‰ä¸¤ä¸ªlistçš„åˆ—è¡¨
+		List borrowDataList[] = new ArrayList[2];
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("å»ºç«‹æ•°æ®åº“è¿æ¥å¤±è´¥!");
+		}
+		try {
+			stmt = con.createStatement();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return list;
-	}
-
-	/**
-	 * ·½·¨°Ë£ºÖ´ĞĞÍ¼ÊéĞÅÏ¢µÄĞŞ¸Ä
-	 */
-	public boolean execBookUpdate(BookDetails bookDetails) {
-		log("Ö´ĞĞÍ¼ÊéĞŞ¸Ä");
-		boolean mark = false;
-		String isbn = bookDetails.getIsbn(); // ISBNºÅ
-		String name = bookDetails.getName(); // ÊéÃû
-		String series = bookDetails.getSeries(); // ´ÔÊéÃû
-		String authors = bookDetails.getAuthors(); // ×÷Õß
-		String publisher = bookDetails.getPublisher(); // ³ö°æĞÅÏ¢,°üÀ¨³ö°æµØµã¡¢³ö°æÉçÃû¡¢³ö°æÈÕÆÚ
-		String size = bookDetails.getSize(); // Í¼Êé¿ª±¾
-		int pages = bookDetails.getPages(); // Ò³Êı
-		double price = bookDetails.getPrice(); // ¶¨¼Û
-		String introduction = bookDetails.getIntroduction(); // Í¼Êé¼ò½é
-		String picture = bookDetails.getPicture(); // ·âÃæÍ¼Æ¬
-		String clnum = bookDetails.getClnum(); // Í¼Êé·ÖÀàºÅ
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			Statement st = con.createStatement();
-			String sql = "update bookdata set name='" + name + "',series = '"
-					+ series + "',authors = '" + authors + "',publisher = '"
-					+ publisher + "',size='" + size + "',pages =" + pages
-					+ ",price = " + price + ",introduction='" + introduction
-					+ "',picture = '" + picture + "',clnum= '" + clnum
-					+ "' where isbn = '" + isbn + "'";
-			log("Ö´ĞĞµÄsqlÎª£º" + sql);
-			int m = st.executeUpdate(sql);
-			if (m > 0) {
-				mark = true;
-			} else {
-				mark = false;
-			}
-		} catch (SQLException e) {
-			log("SQL´íÎó" + e.getMessage());
-			mark = false;
-		}
-		return mark;
-	}
-
-	/**
-	 * ·½·¨¾Å£ºĞŞ¸Ä¶ÁÕßĞÅÏ¢
-	 * 
-	 * @return
-	 */
-	public boolean execReaderUpdate(ReaderInfo readerInfo) {
-		log("Ö´ĞĞ¶ÁÕßĞÅÏ¢ĞŞ¸Ä");
-		boolean mark = false;
-		String readerid = readerInfo.getReadid(); // ¶ÁÕß±àºÅ
-		//String passwd = readerInfo.getPasswd(); // ÃÜÂë
-		String name = readerInfo.getName(); // ĞÕÃû
-		int age = readerInfo.getAge();
-		String gender = readerInfo.getGender(); // ĞÔ±ğ
-		String address = readerInfo.getAddress(); // ×¡Ö·
-		String tel = readerInfo.getTel(); // µç»°
-		String startdate = readerInfo.getStartdate(); // ¿ª»§ÈÕÆÚ
-		String enddate = readerInfo.getEnddate(); // ½áÊøÈÕÆÚ
-		int type = readerInfo.getType(); // ¶ÁÕßÀàĞÍ
-		String major = readerInfo.getMajor();
-		String depart = readerInfo.getDepart();
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			Statement st = con.createStatement();
-			String sql = "update reader set name = '"
-					+ name + "',age = "+age+",gender = '" + gender + "',address = '"
-					+ address + "',tel='" + tel + "',startdate =" + startdate
-					+ ",enddate = " + enddate + ",type=" + type
-					+ ",major = '"+major+"',depart = '"+depart+"' where readerid = '" + readerid + "'";
-			log("Ö´ĞĞµÄsqlÎª£º" + sql);
-			int m = st.executeUpdate(sql);
-			if (m > 0) {
-				mark = true;
-			} else {
-				mark = false;
-			}
-		} catch (SQLException e) {
-			log("SQL´íÎó" + e.getMessage());
-			mark = false;
-		}
-		return mark;
-	}
-
-	/**
-	 * ·½·¨Ê®£ºÌí¼ÓÍ¼ÊéĞÅÏ¢
-	 * 
-	 */
-	public boolean execBookDataInsert(BookDetails bookDetails) {
-		log("·şÎñÆ÷¶ËÌí¼ÓÊé¼®ĞÅÏ¢");
-		boolean mark = false;
+		// æŸ¥è¯¢ç°åœ¨çš„å€Ÿé˜…ä¿¡æ¯
+		String borrowSql = "select * from lendinfo where lendinfo.readerid = '"
+				+ readerID + "' and lendinfo.returndate is null";
+		System.out.print("æŸ¥è¯¢å½“å‰å€Ÿé˜…ä¿¡æ¯ï¼š" + borrowSql);
+		// æŸ¥è¯¢å†å²å€Ÿé˜…ä¿¡æ¯
+		String historySql = "select * from lendinfo where lendinfo.readerid = '"
+				+ readerID + "' and lendinfo.returndate is not null";
+		System.out.print("æŸ¥è¯¢å†å²å€Ÿé˜…ä¿¡æ¯ï¼š" + historySql);
 		/**
-		 * bookdata±íµÄĞÅÏ¢
+		 * 1.##################################################. å½“å‰çš„å€Ÿé˜…ä¿¡æ¯
 		 */
-		String isbn = bookDetails.getIsbn();
-		String name = bookDetails.getName();
-		String authors = bookDetails.getAuthors();
-		String series = bookDetails.getSeries();
-		String publisher = bookDetails.getPublisher();
-		int pages = bookDetails.getPages();
-		String sizes = bookDetails.getSize();
-		double price = bookDetails.getPrice();
-		String clunm = bookDetails.getClnum();
-		String introduction = bookDetails.getIntroduction();
-		String image = bookDetails.getPicture();
-
+		BorrowInfo borrowInfo = null;
+		ResultSet rs1 = null;
 		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String sqlBookData = "insert into bookdata(isbn,name,series,authors,publisher,size,pages,price,introduction,picture,clnum) values ('"
-					+ isbn
-					+ "','"
-					+ name
-					+ "','"
-					+ series
-					+ "','"
-					+ authors
-					+ "','"
-					+ publisher
-					+ "','"
-					+ sizes
-					+ "',"
-					+ pages
-					+ ","
-					+ price
-					+ ",'"
-					+ introduction
-					+ "','"
-					+ image
-					+ "','"
-					+ clunm + "')";
-			log("Ö´ĞĞµÄsqlBookDataÎª£º" + sqlBookData);
-
-			int m = stmt.executeUpdate(sqlBookData);
-			if (m > 0) {
-				mark = true;
-			} else {
-				mark = false;
-			}
-		} catch (SQLException e) {
-			log("SQL´íÎó" + e.getMessage());
-			mark = false;
-		}finally{
-			try{
-			stmt.close();
-			con.close();
-			}catch(SQLException e){
-				log("¹Ø±ÕsqlÒì³£"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-	//¹İ²Ø²åÈë
-	public boolean execBookInfoInsert(BookInLibrary bookInLibrary) {
-		log("·şÎñÆ÷¶ËÌí¼Ó¹İ²ØĞÅÏ¢");
-		boolean mark = false;
-		/**
-		 * bookinfo±íµÄĞÅÏ¢
-		 */
-		String barCode = bookInLibrary.getBarCode();
-		if(barCode.length()<5){
-			int num = 5 - barCode.length();
-			for(int i=0;i<num;i++){
-				barCode = "0"+barCode;
-			}
-		}
-		String isbn = bookInLibrary.getIsbn();
-		String location = bookInLibrary.getLocation();
-		String introdate =DateFormat.getDateInstance().format(new Date());
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-		String sqlBookInfo = "insert into bookinfo(barcode,isbn,status,location,introducetime) values ('"
-			+ barCode
-			+ "','"
-			+ isbn
-			+ "',"
-			+ 1
-			+ ",'"
-			+ location+ "','"+introdate+"')";
-		log("Ö´ĞĞµÄsqlBookInfoÎª£º" + sqlBookInfo);
-		int n = stmt.executeUpdate(sqlBookInfo);
-		if(n>0){
-			mark = true;
-		}else{
-			mark = false;
-		}
-	} catch (SQLException e) {
-		log("SQL´íÎó" + e.getMessage());
-		mark = false;
-	}finally{
-		try{
-			stmt.close();
-			con.close();
-			}catch(SQLException e){
-				log("¹Ø±ÕsqlÒì³£"+e.getMessage());
-			}
-	}
-		return  mark;
-	}
-	
-	/**
-	 * ·½·¨Ê®Ò»£ºÌí¼Ó¶ÁÕßĞÅÏ¢
-	 */
-	public boolean execReaderInsert(ReaderInfo readerInfo) {
-		log("·şÎñÆ÷Ìí¼Ó¶ÁÕßĞÅÏ¢");
-		boolean mark = false;
-		String readerid = readerInfo.getReadid(); // ¶ÁÕß±àºÅ
-		String passwd = readerInfo.getPasswd(); // ÃÜÂë
-		String name = readerInfo.getName(); // ĞÕÃû
-		int age = readerInfo.getAge();
-		String gender = readerInfo.getGender(); // ĞÔ±ğ
-		String address = readerInfo.getAddress(); // ×¡Ö·
-		String tel = readerInfo.getTel(); // µç»°
-		String startdate = readerInfo.getStartdate(); // ¿ª»§ÈÕÆÚ
-		String enddate = readerInfo.getEnddate(); // ½áÊøÈÕÆÚ
-		int type = readerInfo.getType(); // ¶ÁÕßÀàĞÍ
-		String major = readerInfo.getMajor();
-		String depart = readerInfo.getDepart();
-		
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			Statement st = con.createStatement();
-			String sqlBookData = "insert into reader(readerid,passwd,name,age,gender,address,tel,startdate,enddate,type,major,depart) values ('"
-					+ readerid
-					+ "','"
-					+ passwd
-					+ "','"
-					+ name
-					+ "',"+age+",'"
-					+ gender
-					+ "','"
-					+ address
-					+ "','"
-					+ tel
-					+ "','"
-					+ startdate
-					+ "','"
-					+ enddate + "'," + type + ",'"+major+"','"+depart+"')";
-			log("Ö´ĞĞµÄsqlBookDataÎª£º" + sqlBookData);
-
-			int m = st.executeUpdate(sqlBookData);
-			if (m > 0) {
-				mark = true;
-			} else {
-				mark = false;
-			}
-		} catch (SQLException e) {
-			log("SQL´íÎó" + e.getMessage());
-			mark = false;
-		}
-		return mark;
-	}
-
-	/**
-	 * ·½·¨Ê®¶ş£º¸ù¾İÍ¼ÊéµÄÌõĞÎÂëÈ¡µÃÍ¼ÊéµÄÏêÏ¸ĞÅÏ¢
-	 */
-	public BookDetails getBookBarDetails(String barCode) {
-		BookDetails bookDetails = null;
-		ResultSet rs = null;
-		String isbn = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from bookinfo where barcode = '"
-					+ barCode + "'";
-			log("È¡µÃÖ¸¶¨ÌõÂëµÄÍ¼Êéisbn£º" + sql);
-			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
-				isbn = rs.getString("isbn");
-				log("isbn = :" + isbn);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				rs.close();
-
-				stmt.close();
-				con.close();
-			} catch (Exception e) {
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º" + e.getMessage());
-			}
-		}
-		bookDetails = getIsbnBookDetails(isbn);
-		return bookDetails;
-	}
-
-	/**
-	 * ·½·¨Ê®Èı£º¸ù¾İÍ¼Êéisbn²éÕÒÍ¼ÊéĞÅÏ¢
-	 * 
-	 * @param msg
-	 */
-	private BookDetails getIsbnBookDetails(String isbn) {
-		log("¸ù¾İisbn²éÕÒÍ¼Êé£º" + isbn);
-		ResultSet rs = null;
-		BookDetails bookDetails = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String bookSql = "select * from bookdata where isbn like '%" + isbn
-					+ "%'";
-			log("bookSql = :" + bookSql);
-			rs = stmt.executeQuery(bookSql);
-			if (rs.next()) {
-				String name = rs.getString("name");
-				String series = rs.getString("series");
-				String authors = rs.getString("authors");
-				String publisher = rs.getString("publisher");
-				String size = rs.getString("size");
-				int pages = Integer.parseInt(rs.getString("pages"));
-				double price = Double.parseDouble(rs.getString("price"));
-				String introduction = rs.getString("introduction");
-				String picture = rs.getString("picture");
-				String clnum = rs.getString("clnum");
-				bookDetails = new BookDetails(isbn, name, series, authors,
-						publisher, size, pages, price, introduction, picture,
-						clnum);
-			}
-		} catch (SQLException e) {
-			log("¸ù¾İisbnÈ¡µÃÍ¼ÊéÏêÏ¸ĞÅÏ¢³ö´í£º"+e.getMessage());
-		} finally {
-			try {
-				rs.close();
-				stmt.close();
-				con.close();
-			} catch (SQLException e) {
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º" + e.getMessage());
-			}
-		}
-		return bookDetails;
-	}
-
-	/**
-	 * ·½·¨Ê®ËÄ£º¶ÁÕßĞŞ¸ÄÃÜÂë
-	 * 
-	 * @param readerid
-	 * @param pass
-	 * @return
-	 */
-	public boolean execPassModify(String readerid, String pass) {
-		log("½ÓÊÕµ½¶ÁÕß±àºÅ" + readerid + "\tÃÜÂë£º" + pass);
-		boolean modify = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try{
-			stmt = con.createStatement();
-			String sql = "update reader set passwd = '"+pass+"' where readerid = '"+readerid+"'";
-			log(sql);
-			int num = stmt.executeUpdate(sql);
-			log("ÊÜÓ°ÏìµÄĞĞÊı£º"+num);
-			if(num>0){
-				modify = true;
-			}
-			else{
-				modify = false;
-			}
-		}catch(SQLException e){
-			log("ĞŞ¸ÄÃÜÂëÒì³£"+e.getMessage());
-			modify = false;
-		}finally{
-			try{stmt.close();
-			con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return modify;
-	}
-
-	
-	/**
-	 * ·½·¨Ê®Îå£ºÊµÏÖ¶ÁÕß½èÊé
-	 */
-	public boolean execReaderBorrowBook(String readerid, String barCode) {
-		boolean mark = false;
-		log("½ÓÊÕµ½¶ÁÕß±àºÅ" + readerid + "\tÌõĞÎÂë£º" + barCode);
-		ReaderInfo readerInfo =(ReaderInfo) getReaderInfo(readerid, "nullpass");
-		//¶ÁÕßÀàĞÍ
-		int type = readerInfo.getType();
-		log("¶ÁÕßÀàĞÍ£º"+type);
-		//¶ÁÕß×î¶à¿ÉÒÔ½èÔÄÍ¼ÊéµÄÌìÊı
-		int months = getCanBorrowMonths(type);
-		log("¿ÉÒÔ½èÔÄµÄ×î³¤Ê±¼ä£º "+months+" ¸öÔÂ");
-		Calendar c = Calendar.getInstance();
-		int yearOld = c.get(Calendar.YEAR);
-		int monthOld = c.get(Calendar.MONTH)+1;
-		int dateOld = c.get(Calendar.DATE);
-		String borrowdate = yearOld+"-"+monthOld+"-"+dateOld;
-		log("½èÊéÊ±¼ä£º"+borrowdate);
-		c.add(Calendar.MONTH,2);
-		int yearNew =  c.get(Calendar.YEAR);
-		int monthNew = c.get(Calendar.MONTH)+1;
-		int dateNew = c.get(Calendar.DATE);
-		String duedate = yearNew+"-"+monthNew+"-"+dateNew;
-		log("»¹ÊéÊ±¼ä£º"+duedate);
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try{
-			stmt = con.createStatement();
-			String upsql = "update bookinfo set status ="+0+",duedate = '"+duedate+"' where barcode = '"+barCode+"'";
-			log("upsql = "+upsql);
-			int mun = stmt.executeUpdate(upsql);
-			String sql = "insert into lendinfo(readerid,bookcode,borrowdate,duedate) values ('"+readerid+"','"+barCode+"','"+borrowdate+"','"+duedate+"')";
-			log("sql = "+sql);
-			int num = stmt.executeUpdate(sql);
-			log("ÊÜÓ°ÏìµÄĞĞÊı£º"+num);
-			if(num>0&&mun>0){
-				mark = true;
-			}
-			else{
-				mark = false;
-			}
-		}catch(SQLException e){
-			mark = false;
-			log("ĞŞ¸ÄÃÜÂëÒì³£"+e.getMessage());			
-		}finally{
-			try{
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-	
-	/**
-	 * ·½·¨Ê®Áù£º¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ¿É½è
-	 * 
-	 * @param type
-	 * @return
-	 */
-	public boolean checkBarBookCanBorrow(String barCode) {
-		boolean mark = false;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try{
-			stmt = con.createStatement();
-			String sql = "select * from bookinfo where barcode ='"+barCode+"' and status = "+0;
-			log("Ö¸¶¨ÌõÂëµÄÊéÊÇ·ñ¿ÉÓÃ£º"+sql);
-			rs = stmt.executeQuery(sql);
-			if(rs.next()){
-				mark = true;	//Í¼Êé²»¿É½è
-			}
-			else{
-				mark = false;
-			}
-		}catch(SQLException e){
-			mark = false;
-			log("ĞŞ¸ÄÃÜÂëÒì³£"+e.getMessage());			
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-	
-	/**
-	 * ·½·¨Ê®Æß£º¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ´æÔÚ
-	 * 
-	 */
-	public boolean checkBarBookExists(String barCode) {
-		boolean mark = false;
-		ResultSet rs = null;
-		log("Ö´ĞĞÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ´æÔÚ");
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try{
-			stmt = con.createStatement();
-			String sql = "select * from bookinfo where barcode ='"+barCode+"'";
-			log("¼ì²âÖ¸¶¨ÌõÂëÍ¼ÊéÊÇ·ñ´æÔÚ£º"+sql);
-			rs = stmt.executeQuery(sql);
-			//Ö¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ´æÔÚ£¬Èç¹ûrs.next()£¬Ôò´æÔÚ
-			if(rs.next()){
-				//´æÔÚ
-				mark = true;	
-			}
-			else{
-				//²»´æÔÚ
-				mark = false;
-			}
-			log("Í¼ÊéÊÇ·ñ´æÔÚ£º"+mark);
-		}catch(SQLException e){
-			mark = false;
-			log("¼ì²âÖ¸¶¨ÌõÂëÍ¼ÊéÊÇ·ñ´æÔÚ£º"+e.getMessage());			
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-	}
-		return mark;
-}
-	
-	
-	
-	/**
-	 * ·½·¨Ê®°Ë£º»¹Êé
-	 * 
-	 */
-	public BorrowInfo returnBook(String barCode) {
-		BorrowInfo  borrowInfo = null;
-		Statement stmt1=null,stmt2=null,stmt3=null;
-		ResultSet rs = null;
-		String  readerID = null;
-		Date  borrowDate=null,duedate=null;
-		int overDueDays = 0;// ³¬ÆÚÌìÊı
-		double finedMoney = 0;// ·£¿î½ğ¶î
-		int renew =0;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt1 = con.createStatement();
-			stmt2 = con.createStatement();
-			stmt3 = con.createStatement();
-			//¸üĞÂbookinfo±í£¬Ê¹½èÔÄÍ¼Êé×´Ì¬Îª¿ÉÒÔ½èÔÄ
-			String upbookinfosql = "update bookinfo set status = "+1+",duedate = null where barcode = '"
-				+ barCode + "'";
-			log("¸üĞÂbookinfo"+upbookinfosql);
-			int booknum = stmt1.executeUpdate(upbookinfosql);
-			log("¸üĞÂbookinfo"+booknum+"Ìõ¼ÇÂ¼");
-			
-			//»¹Êé
-			String sql = "select * from lendinfo where bookcode = '"+barCode+"'";
-			log("»¹Êé"+sql);
-			Calendar calendar = Calendar.getInstance();
-			String currDate = calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+calendar.get(Calendar.DATE);//»¹ÊéÊ±¼ä
-			rs = stmt2.executeQuery(sql);
-			if(rs.next()){
-				 readerID = rs.getString("readerid");
-				ReaderInfo readerInfo = getReaderInfo(readerID, "nullpass");
-				log("¶ÁÕßbar"+readerInfo.getName());
-				borrowDate = rs.getDate("borrowdate");
-				duedate = rs.getDate("duedate");
-				int type = readerInfo.getType();
-				renew = rs.getInt("renew");
-				double dailyfine = getCanFireMoney(type);
-				overDueDays = DaysInterval.getDays(new Date(), duedate);
-				if(overDueDays==0){
-					finedMoney = 0.0;
-				}
-				else{
-					finedMoney = overDueDays*dailyfine;
-				}
-			}	
-			//¸üĞÂlendinfo±í
-			String uplendinfosql = "update lendinfo set returndate = '" + currDate
-				+ "',overduedays = '" + overDueDays + "',fine = '"
-				+ finedMoney + "' WHERE bookcode ='" + barCode
-				+ "' AND returndate is null";
-			log("¸üĞÂlendinfo"+uplendinfosql);
-			int lendnum = stmt3.executeUpdate(uplendinfosql);
-			log("¸üĞÂlendinfo"+lendnum+"Ìõ¼ÇÂ¼");
-			Date returndate = null;
-//			try {
-//				returndate = new SimpleDateFormat("yyyy-MM-dd").parse(currDate);
-//			} catch (ParseException e) {
-//				log("ÀàĞÍ×ª»»´íÎó"+e.getMessage());
-//			}
-			borrowInfo = new BorrowInfo(readerID,barCode,borrowDate, duedate,currDate,renew,overDueDays, finedMoney);
-			log("½èÔÄĞÅÏ¢£º"+borrowInfo.getReaderId());
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt1.close();
-				stmt2.close();
-				stmt3.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-	}
-		return borrowInfo;
-	}
-	/**
-	 *  ·½·¨Ê®¾Å£º¸ù¾İÖ¸¶¨ÌõÂë²é¿´½èÔÄ¸ÃÊéµÄ¶ÁÕßµÄĞÅÏ¢
-	 */
-	public ReaderInfo getReaderInfoByBarcode(String barCode) {
-		ReaderInfo readerInfo = null;
-		ResultSet rs = null;
-		String readerId = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from lendinfo where bookcode = '"+barCode+"'";
-			rs = stmt.executeQuery(sql);
-			if(rs.next()){
-				readerId = rs.getString("readerid");
-				readerInfo = getReaderInfo(readerId, "nullpass");
-			}else{
-				readerInfo = new ReaderInfo();
-			}
-		}catch(SQLException e){
-			log("¸ù¾İÌõÂëÈ¡¶ÁÕßĞÅÏ¢´íÎó"+e.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return readerInfo;
-	}
-	
-	/**
-	 * ·½·¨¶şÊ®£º¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñÈÔÔÚ¹İ²ØÖĞ
-	 * @param barCode
-	 * @return
-	 */
-	public Boolean getBarCodeIsBorrowed(String barCode) {
-		boolean mark = false;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from bookinfo where barcode ='"+barCode+"' and status = "+1;
-			log("¼ì²âÖ¸¶¨ÌõÂëÍ¼ÊéÊÇ·ñÈÔÔÚ¹İ²ØÖĞ"+sql);
-			rs = stmt.executeQuery(sql);
-			if(rs.next()){
-				mark = true;
-			}else{
-				mark = false;
-			}
-		}catch(SQLException e){
-			mark = false;
-			log("¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñÈÔÔÚ¹İ²ØÖĞ£º"+e.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-
-	/**
-	 * ·½·¨¶şÊ®Ò»£º¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ±»Ğø½è¹ı
-	 * @param barCode
-	 * @return
-	 */
-	public int getBarcodeIsRenewed(String barCode) {
-		int renew = 0;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from lendinfo where bookcode ='"+barCode+"'";
-			log("¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ±»Ğø½è¹ı:"+sql);
-			rs = stmt.executeQuery(sql);
-			if(rs.next()){
-				renew  = rs.getInt("renew");
-			}else{
-				renew = 0;
-			}
-		}catch(SQLException e){
-			renew = 0;
-			log("¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ±»Ğø½è¹ıÒì³££º"+e.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return renew;
-	}
-	
-	/**
-	 * ·½·¨¶şÊ®¶ş£ºĞø½èÍ¼Êé
-	 * 
-	 */
-	public boolean execRenewBook(String readerid, String barCode) {
-		boolean mark = false;
-		Statement stmt1 = null,stmt2 = null;
-		ResultSet rs=null;
-		Date duedate = null;
-		String [] dateStr= {"0000","00","00"};
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from lendinfo where readerid = '"+readerid+"' and  bookcode ='"+barCode+"'";
-			log("Ğø½èÍ¼Êé:"+sql);
-			rs = stmt.executeQuery(sql);
-			if(rs.next()){
-				//È¡³öÓ¦»¹ÈÕÆÚ
-				duedate = rs.getDate("duedate");
-				log("Ó¦»¹ÈÕÆÚ:"+duedate);
-			}else{
-				mark = false;
-				return mark;
-			}
-			if(null!=duedate){
-				String duedateStr = new SimpleDateFormat("yyyy-MM-dd").format(duedate);
-				log("×ª»¯ÈÕÆÚ£º"+duedateStr);
-				if(null==duedateStr||!(duedateStr.matches("\\d{4}-\\d{1,2}-\\d{1,2}"))){
-					mark = false;
-				}
-				String [] dueArray= new String[3];
-				dueArray = duedateStr.split("-");
-				dateStr[0] = dueArray[0];
-				log("Äê£º"+dateStr[0]);
-				dateStr[1] = dueArray[1];
-				log("ÔÂ£º"+dateStr[1]);
-				dateStr[2] = dueArray[2];
-				log("ÈÕ£º"+dateStr[2]);
-				int year = Integer.parseInt(dueArray[0]);
-				log("Äê£º"+year);
-				int month = Integer.parseInt(dueArray[1]);
-				log("ÔÂ£º"+month);
-				int day = Integer.parseInt(dueArray[2]);
-				log("ÈÕ£º"+day);
-				Calendar calendar = Calendar.getInstance();
-				//CalendarÉèÖÃÄê¡¢ÔÂ¡¢ÈÕ
-				log("ÉèÖÃÄê¡¢ÔÂ¡¢ÈÕ");
-				calendar.set(year, month, day);
-				log("ÉèÖÃÍê³É");
-				//µ±Ç°Ê±¼äÔÚÔÂ·İµÄ»ù´¡ÉÏ¼ÓÁ½¸öÔÂ
-				calendar.add(Calendar.MONTH, 2);
-				log("²âÊÔÉèÖÃµÄÄê¡¢ÔÂ¡¢ÈÕ");
-				String newduedate = calendar.get(Calendar.YEAR)+"-"+calendar.get(Calendar.MONTH)+"-"+calendar.get(Calendar.DATE);
-				log("Ğø½èºó¹é»¹µÄÈÕÆÚ£º"+newduedate);
-				//¸üĞÂlendinfoÊı¾İ±í
-				String lendinfosql = "update lendinfo set duedate = '"+newduedate+"', renew = 1 where readerid = '"+readerid+"' and bookcode = '"+barCode+"'";
-				//Ğø½è³É¹¦ºó¸üĞÂlendinfo±í
-				log("Ğø½è³É¹¦ºó¸üĞÂlendinfo±í:"+lendinfosql);
-				stmt1 = con.createStatement();
-				int num = stmt1.executeUpdate(lendinfosql);
-				log("¸üĞÂlendinfoÖĞ¼ÇÂ¼ÊıÄ¿£º"+num);
-				//Ğø½èºó¸üĞÂbookinfo±í£¬¸üĞÂÍ¼Êéµ½ÆÚÊ±¼ä
-				stmt2 = con.createStatement();
-				String upsql = "update bookinfo set duedate = '"+newduedate+"' where barcode = '"+barCode+"'";
-				log("upsql = "+upsql);
-				int mun = stmt2.executeUpdate(upsql);
-				log("¸üĞÂbookinfoÖĞ¼ÇÂ¼ÊıÄ¿£º"+mun);
-				mark = true;
-			}else{
-				mark = false;
-			}
-		}catch(SQLException e){
-			mark = false;
-			log("¼ì²âÖ¸¶¨ÌõÂëµÄÍ¼ÊéÊÇ·ñ±»Ğø½è¹ıÒì³££º"+e.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt1.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-	
-	/**
-	 * ·½·¨¶şÊ®Èı£ºÍ¼ÊéÍ³¼Æ
-	 * @param userid
-	 * @param password
-	 * @return
-	 */
-	public List getBookCountList() {
-		List<Integer> countList = new ArrayList<Integer>();
-		ResultSet countrs = null,commrs = null,borrowedrs = null,inlibrs = null,lostrs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			//×Ü¹İ²ØÊıÄ¿
-			String countsql = "select count(*) from bookinfo";
-			countrs = stmt.executeQuery(countsql);
-			if(countrs.next()){
-				countList.add(Integer.parseInt(countrs.getString(1)));
-			}else{
-				countList.add(0);
-			}
-			//Í¼ÊéÁ÷Í¨ÊıÁ¿
-			String commsql =" select count(*) from lendinfo";
-			commrs = stmt.executeQuery(commsql);
-			if(commrs.next()){
-				countList.add(Integer.parseInt(commrs.getString(1)));
-			}
-			else{
-				countList.add(0);
-			}
-			//±»½è×ßµÄÍ¼ÊéÊıÄ¿
-			String borrowedsql = "select count(*) from bookinfo where status = 0";
-			borrowedrs = stmt.executeQuery(borrowedsql);
-			if(borrowedrs.next()){
-				countList.add(Integer.parseInt(borrowedrs.getString(1)));
-			}else{
-				countList.add(0);
-			}
-			//ÔÚ¹İ²ØµÄÊıÄ¿
-			String inlibsql = "select count(*) from bookinfo where status = 1 ";
-			inlibrs = stmt.executeQuery(inlibsql);
-			if(inlibrs.next()){
-				countList.add(Integer.parseInt(inlibrs.getString(1)));
-			}else{
-				countList.add(0);
-			}
-			String lostsql = "select count(*) from bookinfo where status = -1 ";
-			lostrs = stmt.executeQuery(lostsql);
-			if(lostrs.next()){
-				countList.add(Integer.parseInt(lostrs.getString(1)));
-			}else{
-				countList.add(0);
-			}
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-		}finally{
-			try{
-				countrs.close();
-			
-			borrowedrs.close();
-			inlibrs.close();
-			lostrs.close();}catch(SQLException e){
-				log("¹Ø±ÕÊı¾İ¿âÁ¬½ÓÒì³£"+e.getMessage());
-			}
-		}
-		return countList;
-	}
-	
-	/**
-	 * ·½·¨¶şÊ®ËÄ£º³¬ÆÚÍ¼Êé
-	 */
-	public List getOverDueBooks() {
-		List<String> blist = new ArrayList<String>();
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from lendinfo";
-			System.out.println("sql = "+sql);
-			rs = stmt.executeQuery(sql);
-			while(rs.next()){
-				Date returnDate = rs.getDate("returndate");
-				Date dutDate = rs.getDate("duedate");
-				if(null==returnDate){
-					if(dutDate.before(new Date())){
-						blist.add(rs.getString("bookcode")+":"+dutDate);
+			rs1 = stmt.executeQuery(borrowSql);
+			borrowDataList[0] = new ArrayList();
+			System.out.print("å‡†å¤‡ä»ç»“æœé›†rs1ä¸­å–æ•°æ®ï¼š");
+			while (rs1.next()) {
+				String readerid = rs1.getString("readerid");
+				String bookcode = rs1.getString("bookcode");
+				Date borrowDate = rs1.getDate("borrowdate");
+				Date dueDate = rs1.getDate("duedate");
+				String  returnDate = rs1.getString ("returndate");
+				int renew = rs1.getInt("renew");
+				int overdays = DaysInterval.getDays(new Date(), dueDate);
+				if (overdays > 0) {
+					// è¯»è€…æŸ¥è¯¢è‡ªå·±çš„ä¸ªäººå€Ÿé˜…ä¿¡æ¯æ—¶ï¼Œåˆ¤æ–­æ˜¯å¦è¶…æœŸï¼Œè‹¥è¶…æœŸåˆ™å°†å–ç³»ç»Ÿæ—¶é—´æ¥æ›´æ–°lendinfoè¡¨ï¼Œå¾—å‡ºè¶…æœŸçš„å¤©æ•°
+					String overdaySql = "update lendinfo set overduedays ='"
+							+ overdays + "' where readerid = '" + readerid
+							+ "' and bookcode = '" + bookcode + "'";
+					Statement upstmt = con.createStatement();
+					upstmt.executeUpdate(overdaySql);
+					if (null == upstmt) {
+						upstmt.close();
 					}
 				}
+				borrowInfo = new BorrowInfo(readerid, bookcode, borrowDate,
+						dueDate, returnDate, renew, overdays);
+				System.out.print("è¶…æœŸå¤©æ•°" + borrowInfo.getOverduedays());
+				borrowDataList[0].add(borrowInfo);
 			}
-		}catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("ĞŞ¸ÄÃÜÂëÊ±¹Ø±ÕsqlÒì³££º"+e.getMessage());
-			}
-		}
-		return blist;
-	}
-	
-	/**
-	 * ·½·¨¶şÊ®Îå£ºÍ¼Êé³ö¿â
-	 * @param flag
-	 */
-
-	public boolean outLib(String isbn) {
-		boolean mark = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String booksql = "delete from bookdata where isbn ='" + isbn+"'";
-			log(booksql);
-			int m  = stmt.executeUpdate(booksql);
-			String lendsql = "delete from bookinfo where isbn ='" + isbn+"'";
-			int n  = stmt.executeUpdate(lendsql);
-			if (m>0&&n>0) {
-				mark = true;
-			}else{
-				mark = false;
-			}
+			System.out.print("è¯»è€…å½“å‰å€Ÿé˜…å›¾ä¹¦ï¼š" + borrowDataList[0].size() + "æœ¬");
 		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
+			System.out.print("è¯»å–å½“å‰å€Ÿé˜…å›¾ä¹¦ä¿¡æ¯é”™è¯¯ï¼š" + e.getMessage());
+		} finally {
+			try {
+				rs1.close();
+			} catch (SQLException e) {
+				System.out.print("å…³é—­ç»“æœé›†rs1é”™è¯¯ï¼š" + e.getMessage());
 			}
 		}
-		return mark;
-	}
+		ResultSet rs2 = null;
+		try {
+			rs2 = stmt.executeQuery(historySql);
+			borrowDataList[1] = new ArrayList();
+			System.out.print("å‡†å¤‡ä»ç»“æœé›†rs2ä¸­å–æ•°æ®ï¼š");
+			while (rs2.next()) {
+				String readerid = rs2.getString("readerid");
+				String bookcode = rs2.getString("bookcode");
+				Date borrowDate = rs2.getDate("borrowdate");
+				Date dueDate = rs2.getDate("duedate");
+				String  returnDate = rs2.getString ("returndate");
+				int renew = rs2.getInt("renew");
+				int overDueDays = rs2.getInt("overduedays");
+				double finedMoney = rs2.getDouble("fine");
+				borrowInfo = new BorrowInfo(readerid, bookcode, borrowDate,
+						dueDate, returnDate, renew, overDueDays, finedMoney);
+				borrowDataList[1].add(borrowInfo);
+			}
+			System.out.print("è¶…æœŸå›¾ä¹¦ï¼š" + borrowDataList[0].size() + "æœ¬");
 
-	/**
-	 * ·½·¨¶şÊ®Áù£º¸ù¾İisbnÈ¡µÃÍ¼ÊéÏêÏ¸ĞÅÏ¢
-	 */
-	public BookDetails getBookIsbnDetails(String isbn) {
-		BookDetails bookDetails = null;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String booksql = "select  * from bookdata where isbn ='" + isbn+"'";
-			log(booksql);
-			rs = stmt.executeQuery(booksql);
-			if(rs.next()){
-				String name = rs.getString("name");
-				String series = rs.getString("series");
-				String authors = rs.getString("authors");
-				String publisher = rs.getString("publisher");
-				String size= rs.getString("size");
-				int pages= rs.getInt("pages");
-				double 	price= rs.getDouble("price");
-				String 	introduction= rs.getString("introduction");
-				String picture= rs.getString("picture");
-				String clnum= rs.getString("clnum");		
-				bookDetails  = new BookDetails(isbn, name, series, authors, publisher, size, pages, price, introduction, picture, clnum);
-			}else{
-				bookDetails = new BookDetails();
-			}
-		}catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
-			}
-		}
-		return bookDetails;
-	}
-	
-
-	/**
-	 * ·½·¨¶şÊ®Æß£ºÉ¾³ıÖ¸¶¨±àºÅµÄ¶ÁÕß
-	 */
-
-	public boolean execReaderDelete(String readerid) {
-		boolean mark = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			//É¾³ı¶ÁÕß
-			String ksql = "delete from reader where readerid ='" + readerid+"'";
-			log("É¾³ı¶ÁÕß:"+ksql);
-			int m = stmt.executeUpdate(ksql);
-			//É¾³ı¶ÁÕßµÄ½èÔÄĞÅÏ¢
-			String rbsql = "delete from lendinfo where  readerid ='" + readerid+"'";
-			log("É¾³ı¶ÁÕßµÄ½èÔÄĞÅÏ¢"+rbsql);
-			stmt.executeUpdate(rbsql);
-			if(m>0){
-				mark = true;
-			}else{
-				mark = false;
-			}
-				
-		}catch (SQLException e) {
-			mark = false;
-			e.printStackTrace();
-		}finally{
-			try{
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
-			}
-		}
-		return mark;
-	}
-	/**
-	 * ·½·¨M£ºÈ¡µÃ¿ÉÒÔ½èÔÄµÄÍ¼ÊéÊıÄ¿
-	 * 
-	 * @param type
-	 * @return
-	 */
-	public int getCanBorrowAccount(int type) {
-		int account = 0;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select amount from parameter where type =" + type;
-			log(sql);
-			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
-				account = rs.getInt(1);
-			}
-			log(account);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
-			}
-		}
-		return account;
-	}
-
-	/**
-	 * ·½·¨M+1£ºÈ¡µÃÃ¿ÈÕµÄ·£½ğ
-	 * 
-	 * @param type
-	 * @return
-	 */
-	public double getCanFireMoney(int type) {
-		double money = 0.0;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select * from parameter where type =" + type;
-			log(sql);
-			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
-				money = rs.getDouble("dailyfine");
-			}
-			log("Ã¿Ìì·£½ğ£º"+money);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
-			}
-		}
-		return money;
-	}
-	
-	/**
-	 * ·½·¨M+2£ºÈ¡µÃ×î³¤¿ÉÒÔ½èÔÄµÄÌìÊı
-	 * 
-	 * @param type
-	 * @return
-	 */
-	public int getCanBorrowMonths(int type) {
-		int months = 0;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-			log("¼ÓÔØÊı¾İ¿âÁ¬½Ó³É¹¦");
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!" + ee.getMessage());
-		}
-		try {
-			stmt = con.createStatement();
-			String sql = "select period from parameter where type =" + type;
-			log(sql);
-			rs = stmt.executeQuery(sql);
-			if (rs.next()) {
-				months = rs.getInt(1);
-			}
-			log(months);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}finally{
-			try{
-				rs.close();
-				stmt.close();
-				con.close();
-			}catch(SQLException e){
-				log("¹Ø±Õ½á¹û¼¯´íÎó£º"+e.getMessage());
-			}
-		}
-		return months;
-	}
-	
-	
-	
-	
-	
-	public boolean addMaster(String userid, String password, String name,
-			int state1, int state2, int state3) {
-		boolean b = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String Isql = "INSERT INTO librarian(libraianid,passwd,name,bookp,readerp,parameterp) values('"
-					+ userid
-					+ "','"
-					+ password
-					+ "','"
-					+ name
-					+ "',"
-					+ state1
-					+ "," + state2 + "," + state3 + ")";
-			System.out.println(Isql);
-			int m = stmt.executeUpdate(Isql);
-			if (m == 1) {
-				b = true;
-			}
-			stmt.close();
-			con.close();
-			return b;
 		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-			return b;
-		}
-	}
-
-	public ArrayList getMaster() {
-		ArrayList<LibraianInfo>  managerList =null;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String psql = "select * from librarian";
-			rs = stmt.executeQuery(psql);
-			managerList = new ArrayList<LibraianInfo>();
-			LibraianInfo librarianInfo = null;
-			String userid;
-			String passwd;
-			String name;
-			int bookp;
-			int readerp;
-			int parameterp;
-			while (rs.next()) {
-				userid = rs.getString("libraianid");
-				passwd = rs.getString("passwd");
-				name = rs.getString("name");
-				bookp = rs.getInt("bookp");
-				readerp = rs.getInt("readerp");
-				parameterp = rs.getInt("parameterp");
-				librarianInfo = new LibraianInfo(userid, passwd, name, bookp, readerp, parameterp);
-				managerList.add(librarianInfo);
+			System.out.print("æ•°æ®åº“è¯»å¼‚å¸¸ï¼Œ" + e1);
+		} finally {
+			try {
+				rs2.close();
+			} catch (SQLException e) {
+				System.out.print("å…³é—­ç»“æœé›†rs2å‡ºé”™ï¼š" + e.getMessage());
 			}
-			rs.close();
-			stmt.close();
-			con.close();
-			return managerList;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-			return managerList;
 		}
-	}
-
-	public boolean modifyMaster(String userid, String password, String name,
-			int state1, int state2, int state3) {
-		boolean b = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String UPsql;
-			String passwd = password;
-			if (passwd == null || passwd.equals("")) {
-				UPsql = "UPDATE librarian SET name = '" + name + "',bookp = "
-						+ state1 + ",readerp = " + state2 + ",parameterp = "
-						+ state3 + " WHERE libraianid = '" + userid + "'";
-			} else {
-				UPsql = "UPDATE librarian SET passwd = '" + password
-						+ "',name = '" + name + "',bookp = " + state1
-						+ ",readerp = " + state2 + ",parameterp = " + state3
-						+ " WHERE libraianid = '" + userid + "'";
+		if (stmt != null) {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				System.out.print("å…³é—­å¤„ç†è¯­å¥stmtå‡ºé”™ï¼š" + e.getMessage());
 			}
-			int m = stmt.executeUpdate(UPsql);
-			if (m == 1) {
-				b = true;
+		}
+		if (con != null) {
+			try {
+				con.close();
+			} catch (SQLException e) {
+				System.out.print("å…³é—­æ•°æ®åº“è¿æ¥conå‡ºé”™ï¼š" + e.getMessage());
 			}
-			stmt.close();
-			con.close();
-			return b;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-			return b;
 		}
+		return borrowDataList;
 	}
-
-	public boolean dellMaster(String userid) {
-		boolean b = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String Dsql = "DELETE FROM librarian WHERE libraianid = '" + userid+ "'";
-			System.out.println(Dsql);
-			int m = stmt.executeUpdate(Dsql);
-			if (m == 1) {
-				b = true;
-			}
-			stmt.close();
-			con.close();
-			return b;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1.getMessage());
-			return b;
-		}
-	}
-	/**
-	 * È¡µÃËùÓĞµÄ²ÎÊıĞÅÏ¢
-	 * @param parameterID
-	 * @return
-	 */
-	public ArrayList getParamterInfo(String parameterID) {
-		ArrayList paraList = null;
-		ResultSet rs = null;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String pSql = "SELECT * FROM parameter";
-
-			rs = stmt.executeQuery(pSql);
-			paraList = new ArrayList();
-			ParameterInfo parameterInfo = null;
-			int id; // ²ÎÊıµÄidºÅ
-			int type; // ¶ÁÕßÀà±ğ
-			int amount; // ½èÊéÊıÁ¿
-			int period; // ½èÊéÌìÊı
-			double dailyfine = 0; // ³¬ÆÚÃ¿ÈÕ·£¿î½ğ¶î
-			while (rs.next()) // Êä³öÃ¿Ìõ¼ÇÂ¼
-			{
-				id = rs.getInt("id");
-				type = rs.getInt("type");
-				amount = rs.getInt("amount");
-				period = rs.getInt("period");
-				dailyfine = rs.getDouble("dailyfine");
-				parameterInfo = new ParameterInfo(id, type, amount, period,
-						dailyfine);
-
-				paraList.add(parameterInfo);
-
-			}
-			System.out.println(String.valueOf(dailyfine));
-
-			rs.close();
-			stmt.close();
-			con.close();
-			return paraList;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-			return paraList;
-		}
-	}
-	
-	/**
-	 * ²éÕÒ¹ÜÀíÔ±ĞÅÏ¢
-	 * @param userID
-	 * @param librarianPW
-	 * @return
-	 */
-//	public LibraianInfo getLibrariaInfo(String userID, String librarianPW) {
-//		LibraianInfo librariaInfo = null;
-//		ResultSet rs = null;
-//		try {
-//			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-//		} catch (SQLException ee) {
-//			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-//		}
-//		try {
-//			stmt = con.createStatement();
-//			String pSqlSel = "SELECT librarian.userid, librarian.passwd";
-//			String pSqlFrom = " FROM librarian";
-//			String pSqlWhere = " WHERE librarian.userid = '" + userID
-//					+ "' AND librarian.passwd = '" + librarianPW + "'";
-//			String pSql = pSqlSel + pSqlFrom + pSqlWhere;
-//			rs = stmt.executeQuery(pSql);
-//
-//			if (rs.next()) {
-//				librariaInfo = new LibraianInfo(userID, librarianPW);
-//			} else {
-//				log("ÓÃ»§¶ÁÈ¡ĞÅÏ¢Òì³££¡");
-//			}
-//			rs.close();
-//			stmt.close();
-//			con.close();
-//			return librariaInfo;
-//		} catch (SQLException e1) {
-//			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-//			librariaInfo = null;
-//			return librariaInfo;
-//		}
-//	}
-
-	/**
-	 * ¸üĞÂ²ÎÊıĞÅÏ¢
-	 */
-	public boolean updateParameter(int type, int amount, int period,double dailyfine) {
-		boolean b = false;
-		try {
-			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
-		} catch (SQLException ee) {
-			log("½¨Á¢Êı¾İ¿âÁ¬½ÓÊ§°Ü!");
-		}
-		try {
-			stmt = con.createStatement();
-			String UPsql = "UPDATE parameter SET amount = " + amount
-					+ ",period = " + period + ",dailyfine = " + dailyfine
-					+ " WHERE type = " + type;
-			int m = stmt.executeUpdate(UPsql);
-
-			if (m ==1) {
-
-				b= true;
-			} else {
-				log("ÓÃ»§¶ÁÈ¡ĞÅÏ¢Òì³££¡");
-			}
-			stmt.close();
-			con.close();
-			return b;
-		} catch (SQLException e1) {
-			log("Êı¾İ¿â¶ÁÒì³££¬" + e1);
-			return b;
-		}
-	}
-//¼ÇÂ¼ÈÕÖ¾µÄ·½·¨
-protected void log(Object msg) {
-	System.out.println(CurrDateTime.currDateTime() + "LibDataAccessorrÀà £º"
-			+ msg);
-}
-
-
-
 }
