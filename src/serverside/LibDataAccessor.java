@@ -390,4 +390,59 @@ public class LibDataAccessor {
 		}
 		return borrowDataList;
 	}
+	
+	public boolean execReaderInsert(ReaderInfo readerInfo) {
+		System.out.print("服务器添加读者信息");
+		boolean mark = false;
+		String readerid = readerInfo.getReadid(); // 读者编号
+		String passwd = readerInfo.getPasswd(); // 密码
+		String name = readerInfo.getName(); // 姓名
+		int age = readerInfo.getAge();
+		String gender = readerInfo.getGender(); // 性别
+		String address = readerInfo.getAddress(); // 住址
+		String tel = readerInfo.getTel(); // 电话
+		String startdate = readerInfo.getStartdate(); // 开户日期
+		String enddate = readerInfo.getEnddate(); // 结束日期
+		int type = readerInfo.getType(); // 读者类型
+		String major = readerInfo.getMajor();
+		String depart = readerInfo.getDepart();
+		
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			Statement st = con.createStatement();
+			String sqlBookData = "insert into reader(readerid,passwd,name,age,gender,address,tel,startdate,enddate,type,major,depart) values ('"
+					+ readerid
+					+ "','"
+					+ passwd
+					+ "','"
+					+ name
+					+ "',"+age+",'"
+					+ gender
+					+ "','"
+					+ address
+					+ "','"
+					+ tel
+					+ "','"
+					+ startdate
+					+ "','"
+					+ enddate + "'," + type + ",'"+major+"','"+depart+"')";
+			System.out.print("执行的sqlBookData为：" + sqlBookData);
+
+			int m = st.executeUpdate(sqlBookData);
+			if (m > 0) {
+				mark = true;
+			} else {
+				mark = false;
+			}
+		} catch (SQLException e) {
+			System.out.print("SQL错误" + e.getMessage());
+			mark = false;
+		}
+		return mark;
+	}
 }
