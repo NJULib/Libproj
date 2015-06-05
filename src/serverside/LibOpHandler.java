@@ -282,17 +282,6 @@ public class LibOpHandler extends Thread implements LibProtocals {
 	/**
 	 * 方法二：根据读者类型取得可借阅图书的最大量
 	 */
-	private void opGetAccount() {
-		try {
-			int type = inputFromClient.readInt();
-			int account = libDataAccessor.getCanBorrowAccount(type);
-			outputToClient.writeInt(account);
-			outputToClient.flush();
-			log(account);
-		} catch (IOException exc) {
-			log("发生I/O异常:  " + exc);
-		} 
-	}
 
 	/**
 	 * 方法三：取得特定条件的书籍的详细信息
