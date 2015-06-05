@@ -445,4 +445,248 @@ public class LibDataAccessor {
 		}
 		return mark;
 	}
+	
+	//书籍信息插入
+	public boolean execBookDataInsert(BookDetails bookDetails) {
+		System.out.print("服务器端添加书籍信息");
+		boolean mark = false;
+		/**
+		 * bookdata表的信息
+		 */
+		String isbn = bookDetails.getIsbn();
+		String name = bookDetails.getName();
+		String authors = bookDetails.getAuthors();
+		String series = bookDetails.getSeries();
+		String publisher = bookDetails.getPublisher();
+		int pages = bookDetails.getPages();
+		String sizes = bookDetails.getSize();
+		double price = bookDetails.getPrice();
+		String clunm = bookDetails.getClnum();
+		String introduction = bookDetails.getIntroduction();
+		String image = bookDetails.getPicture();
+
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			String sqlBookData = "insert into bookdata(isbn,name,series,authors,publisher,size,pages,price,introduction,picture,clnum) values ('"
+					+ isbn
+					+ "','"
+					+ name
+					+ "','"
+					+ series
+					+ "','"
+					+ authors
+					+ "','"
+					+ publisher
+					+ "','"
+					+ sizes
+					+ "',"
+					+ pages
+					+ ","
+					+ price
+					+ ",'"
+					+ introduction
+					+ "','"
+					+ image
+					+ "','"
+					+ clunm + "')";
+			System.out.print("执行的sqlBookData为：" + sqlBookData);
+
+			int m = stmt.executeUpdate(sqlBookData);
+			if (m > 0) {
+				mark = true;
+			} else {
+				mark = false;
+			}
+		} catch (SQLException e) {
+			System.out.print("SQL错误" + e.getMessage());
+			mark = false;
+		}finally{
+			try{
+			stmt.close();
+			con.close();
+			}catch(SQLException e){
+				System.out.print("关闭sql异常"+e.getMessage());
+			}
+		}
+		return mark;
+	}
+	
+	//根据isbn获取书本信息
+	private BookDetails getIsbnBookDetails(String isbn) {
+		System.out.print("根据isbn查找图书：" + isbn);
+		ResultSet rs = null;
+		BookDetails bookDetails = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			String bookSql = "select * from bookdata where isbn like '%" + isbn
+					+ "%'";
+			System.out.print("bookSql = :" + bookSql);
+			rs = stmt.executeQuery(bookSql);
+			if (rs.next()) {
+				String name = rs.getString("name");
+				String series = rs.getString("series");
+				String authors = rs.getString("authors");
+				String publisher = rs.getString("publisher");
+				String size = rs.getString("size");
+				int pages = Integer.parseInt(rs.getString("pages"));
+				double price = Double.parseDouble(rs.getString("price"));
+				String introduction = rs.getString("introduction");
+				String picture = rs.getString("picture");
+				String clnum = rs.getString("clnum");
+				bookDetails = new BookDetails(isbn, name, series, authors,
+						publisher, size, pages, price, introduction, picture,
+						clnum);
+			}
+		} catch (SQLException e) {
+			System.out.print("根据isbn取得图书详细信息出错："+e.getMessage());
+		} finally {
+			try {
+				rs.close();
+				stmt.close();
+				con.close();
+			} catch (SQLException e) {
+				System.out.print("关闭结果集错误：" + e.getMessage());
+			}
+		}
+		return bookDetails;
+	}
+	
+	//根据条形码获取书本信息
+	public BookDetails getBookBarDetails(String barCode) {
+		BookDetails bookDetails = null;
+		ResultSet rs = null;
+		String isbn = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select * from bookinfo where barcode = '"
+					+ barCode + "'";
+			System.out.print("取得指定条码的图书isbn：" + sql);
+			rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				isbn = rs.getString("isbn");
+				System.out.print("isbn = :" + isbn);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				rs.close();
+
+				stmt.close();
+				con.close();
+			} catch (Exception e) {
+				System.out.print("关闭结果集错误：" + e.getMessage());
+			}
+		}
+		bookDetails = getIsbnBookDetails(isbn);
+		return bookDetails;
+	}
+	
+	public int getCanBorrowMonths(int type) {
+		int months = 0;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select period from parameter where type =" + type;
+			System.out.print(sql);
+			rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				months = rs.getInt(1);
+			}
+			System.out.print(months);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("关闭结果集错误："+e.getMessage());
+			}
+		}
+		return months;
+	}
+	
+	//读者借阅书籍
+	public boolean execReaderBorrowBook(String readerid, String barCode) {
+		boolean mark = false;
+		System.out.print("接收到读者编号" + readerid + "\t条形码：" + barCode);
+		ReaderInfo readerInfo =(ReaderInfo) getReaderInfo(readerid, "nullpass");
+		//读者类型
+		int type = readerInfo.getType();
+		System.out.print("读者类型："+type);
+		//读者最多可以借阅图书的天数
+		int months = getCanBorrowMonths(type);
+		System.out.print("可以借阅的最长时间： "+months+" 个月");
+		Calendar c = Calendar.getInstance();
+		int yearOld = c.get(Calendar.YEAR);
+		int monthOld = c.get(Calendar.MONTH)+1;
+		int dateOld = c.get(Calendar.DATE);
+		String borrowdate = yearOld+"-"+monthOld+"-"+dateOld;
+		System.out.print("借书时间："+borrowdate);
+		c.add(Calendar.MONTH,2);
+		int yearNew =  c.get(Calendar.YEAR);
+		int monthNew = c.get(Calendar.MONTH)+1;
+		int dateNew = c.get(Calendar.DATE);
+		String duedate = yearNew+"-"+monthNew+"-"+dateNew;
+		System.out.print("还书时间："+duedate);
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try{
+			stmt = con.createStatement();
+			String upsql = "update bookinfo set status ="+0+",duedate = '"+duedate+"' where barcode = '"+barCode+"'";
+			System.out.print("upsql = "+upsql);
+			int mun = stmt.executeUpdate(upsql);
+			String sql = "insert into lendinfo(readerid,bookcode,borrowdate,duedate) values ('"+readerid+"','"+barCode+"','"+borrowdate+"','"+duedate+"')";
+			System.out.print("sql = "+sql);
+			int num = stmt.executeUpdate(sql);
+			System.out.print("受影响的行数："+num);
+			if(num>0&&mun>0){
+				mark = true;
+			}
+			else{
+				mark = false;
+			}
+		}catch(SQLException e){
+			mark = false;
+			System.out.print("修改密码异常"+e.getMessage());			
+		}finally{
+			try{
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return mark;
+	}
 }
