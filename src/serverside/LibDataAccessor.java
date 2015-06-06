@@ -689,4 +689,196 @@ public class LibDataAccessor {
 		}
 		return mark;
 	}
+	
+	//查看书本是佛能被借阅
+	public boolean checkBarBookCanBorrow(String barCode) {
+		boolean mark = false;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try{
+			stmt = con.createStatement();
+			String sql = "select * from bookinfo where barcode ='"+barCode+"' and status = "+0;
+			System.out.print("指定条码的书是否可用："+sql);
+			rs = stmt.executeQuery(sql);
+			if(rs.next()){
+				mark = true;	//图书不可借
+			}
+			else{
+				mark = false;
+			}
+		}catch(SQLException e){
+			mark = false;
+			System.out.print("修改密码异常"+e.getMessage());			
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return mark;
+	}
+	
+	//根据条形码查看是否书籍存在
+	public boolean checkBarBookExists(String barCode) {
+		boolean mark = false;
+		ResultSet rs = null;
+		System.out.print("执行指定条码的图书是否存在");
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try{
+			stmt = con.createStatement();
+			String sql = "select * from bookinfo where barcode ='"+barCode+"'";
+			System.out.print("检测指定条码图书是否存在："+sql);
+			rs = stmt.executeQuery(sql);
+			//指定条码的图书是否存在，如果rs.next()，则存在
+			if(rs.next()){
+				//存在
+				mark = true;	
+			}
+			else{
+				//不存在
+				mark = false;
+			}
+			System.out.print("图书是否存在："+mark);
+		}catch(SQLException e){
+			mark = false;
+			System.out.print("检测指定条码图书是否存在："+e.getMessage());			
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+			return mark;
+	}
+	
+	//获取罚金
+	public double getCanFireMoney(int type) {
+		double money = 0.0;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select * from parameter where type =" + type;
+			System.out.print(sql);
+			rs = stmt.executeQuery(sql);
+			if (rs.next()) {
+				money = rs.getDouble("dailyfine");
+			}
+			System.out.print("每天罚金："+money);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("关闭结果集错误："+e.getMessage());
+			}
+		}
+		return money;
+	}
+	
+	//还书
+	public BorrowInfo returnBook(String barCode) {
+		BorrowInfo  borrowInfo = null;
+		Statement stmt1=null,stmt2=null,stmt3=null;
+		ResultSet rs = null;
+		String  readerID = null;
+		Date  borrowDate=null,duedate=null;
+		int overDueDays = 0;// 超期天数
+		double finedMoney = 0;// 罚款金额
+		int renew =0;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt1 = con.createStatement();
+			stmt2 = con.createStatement();
+			stmt3 = con.createStatement();
+			//更新bookinfo表，使借阅图书状态为可以借阅
+			String upbookinfosql = "update bookinfo set status = "+1+",duedate = null where barcode = '"
+				+ barCode + "'";
+			System.out.print("更新bookinfo"+upbookinfosql);
+			int booknum = stmt1.executeUpdate(upbookinfosql);
+			System.out.print("更新bookinfo"+booknum+"条记录");
+			
+			//还书
+			String sql = "select * from lendinfo where bookcode = '"+barCode+"'";
+			System.out.print("还书"+sql);
+			Calendar calendar = Calendar.getInstance();
+			String currDate = calendar.get(Calendar.YEAR)+"-"+(calendar.get(Calendar.MONTH)+1)+"-"+calendar.get(Calendar.DATE);//还书时间
+			rs = stmt2.executeQuery(sql);
+			if(rs.next()){
+				 readerID = rs.getString("readerid");
+				ReaderInfo readerInfo = getReaderInfo(readerID, "nullpass");
+				System.out.print("读者bar"+readerInfo.getName());
+				borrowDate = rs.getDate("borrowdate");
+				duedate = rs.getDate("duedate");
+				int type = readerInfo.getType();
+				renew = rs.getInt("renew");
+				double dailyfine = getCanFireMoney(type);
+				overDueDays = DaysInterval.getDays(new Date(), duedate);
+				if(overDueDays==0){
+					finedMoney = 0.0;
+				}
+				else{
+					finedMoney = overDueDays*dailyfine;
+				}
+			}	
+			//更新lendinfo表
+			String uplendinfosql = "update lendinfo set returndate = '" + currDate
+				+ "',overduedays = '" + overDueDays + "',fine = '"
+				+ finedMoney + "' WHERE bookcode ='" + barCode
+				+ "' AND returndate is null";
+			System.out.print("更新lendinfo"+uplendinfosql);
+			int lendnum = stmt3.executeUpdate(uplendinfosql);
+			System.out.print("更新lendinfo"+lendnum+"条记录");
+			Date returndate = null;
+//			try {
+//				returndate = new SimpleDateFormat("yyyy-MM-dd").parse(currDate);
+//			} catch (ParseException e) {
+//				log("类型转换错误"+e.getMessage());
+//			}
+			borrowInfo = new BorrowInfo(readerID,barCode,borrowDate, duedate,currDate,renew,overDueDays, finedMoney);
+			System.out.print("借阅信息："+borrowInfo.getReaderId());
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1.getMessage());
+		}finally{
+			try{
+				rs.close();
+				stmt1.close();
+				stmt2.close();
+				stmt3.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+	}
+		return borrowInfo;
+	}
+	
 }
