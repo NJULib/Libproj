@@ -15,6 +15,7 @@ import serverside.entity.BookDetails;
 import serverside.entity.BookInLibrary;
 import serverside.entity.BorrowInfo;
 import serverside.entity.LibraianInfo;
+import serverside.entity.ParameterInfo;
 import serverside.entity.ReaderInfo;
 import util.DaysInterval;
 
@@ -1407,5 +1408,355 @@ public class LibDataAccessor {
 			}
 		}
 		return modify;
+	}
+	
+	//通过条形码获取阅读该书的读者信息
+	public ReaderInfo getReaderInfoByBarcode(String barCode) {
+		ReaderInfo readerInfo = null;
+		ResultSet rs = null;
+		String readerId = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select * from lendinfo where bookcode = '"+barCode+"'";
+			rs = stmt.executeQuery(sql);
+			if(rs.next()){
+				readerId = rs.getString("readerid");
+				readerInfo = getReaderInfo(readerId, "nullpass");
+			}else{
+				readerInfo = new ReaderInfo();
+			}
+		}catch(SQLException e){
+			System.out.print("根据条码取读者信息错误"+e.getMessage());
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return readerInfo;
+	}
+	
+	//根绝条形码看书是否在馆藏中
+	public Boolean getBarCodeIsBorrowed(String barCode) {
+		boolean mark = false;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select * from bookinfo where barcode ='"+barCode+"' and status = "+1;
+			System.out.print("检测指定条码图书是否仍在馆藏中"+sql);
+			rs = stmt.executeQuery(sql);
+			if(rs.next()){
+				mark = true;
+			}else{
+				mark = false;
+			}
+		}catch(SQLException e){
+			mark = false;
+			System.out.print("检测指定条码的图书是否仍在馆藏中："+e.getMessage());
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return mark;
+	}
+	
+	//查看数是否被续借过
+	public int getBarcodeIsRenewed(String barCode) {
+		int renew = 0;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String sql = "select * from lendinfo where bookcode ='"+barCode+"'";
+			System.out.print("检测指定条码的图书是否被续借过:"+sql);
+			rs = stmt.executeQuery(sql);
+			if(rs.next()){
+				renew  = rs.getInt("renew");
+			}else{
+				renew = 0;
+			}
+		}catch(SQLException e){
+			renew = 0;
+			System.out.print("检测指定条码的图书是否被续借过异常："+e.getMessage());
+		}finally{
+			try{
+				rs.close();
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return renew;
+	}
+	
+	//删除指定编号的读者
+	public boolean execReaderDelete(String readerid) {
+		boolean mark = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+			//删除读者
+			String ksql = "delete from reader where readerid ='" + readerid+"'";
+			System.out.print("删除读者:"+ksql);
+			int m = stmt.executeUpdate(ksql);
+			//删除读者的借阅信息
+			String rbsql = "delete from lendinfo where  readerid ='" + readerid+"'";
+			System.out.print("删除读者的借阅信息"+rbsql);
+			stmt.executeUpdate(rbsql);
+			if(m>0){
+				mark = true;
+			}else{
+				mark = false;
+			}
+				
+		}catch (SQLException e) {
+			mark = false;
+			e.printStackTrace();
+		}finally{
+			try{
+				stmt.close();
+				con.close();
+			}catch(SQLException e){
+				System.out.print("关闭结果集错误："+e.getMessage());
+			}
+		}
+		return mark;
+	}
+	
+	//增加管理员
+	public boolean addMaster(String userid, String password, String name,
+			int state1, int state2, int state3) {
+		boolean b = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String Isql = "INSERT INTO librarian(libraianid,passwd,name,bookp,readerp,parameterp) values('"
+					+ userid
+					+ "','"
+					+ password
+					+ "','"
+					+ name
+					+ "',"
+					+ state1
+					+ "," + state2 + "," + state3 + ")";
+			System.out.println(Isql);
+			int m = stmt.executeUpdate(Isql);
+			if (m == 1) {
+				b = true;
+			}
+			stmt.close();
+			con.close();
+			return b;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1.getMessage());
+			return b;
+		}
+	}
+	
+	public ArrayList getMaster() {
+		ArrayList<LibraianInfo>  managerList =null;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String psql = "select * from librarian";
+			rs = stmt.executeQuery(psql);
+			managerList = new ArrayList<LibraianInfo>();
+			LibraianInfo librarianInfo = null;
+			String userid;
+			String passwd;
+			String name;
+			int bookp;
+			int readerp;
+			int parameterp;
+			while (rs.next()) {
+				userid = rs.getString("libraianid");
+				passwd = rs.getString("passwd");
+				name = rs.getString("name");
+				bookp = rs.getInt("bookp");
+				readerp = rs.getInt("readerp");
+				parameterp = rs.getInt("parameterp");
+				librarianInfo = new LibraianInfo(userid, passwd, name, bookp, readerp, parameterp);
+				managerList.add(librarianInfo);
+			}
+			rs.close();
+			stmt.close();
+			con.close();
+			return managerList;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1.getMessage());
+			return managerList;
+		}
+	}
+	
+	public boolean modifyMaster(String userid, String password, String name,
+			int state1, int state2, int state3) {
+		boolean b = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String UPsql;
+			String passwd = password;
+			if (passwd == null || passwd.equals("")) {
+				UPsql = "UPDATE librarian SET name = '" + name + "',bookp = "
+						+ state1 + ",readerp = " + state2 + ",parameterp = "
+						+ state3 + " WHERE libraianid = '" + userid + "'";
+			} else {
+				UPsql = "UPDATE librarian SET passwd = '" + password
+						+ "',name = '" + name + "',bookp = " + state1
+						+ ",readerp = " + state2 + ",parameterp = " + state3
+						+ " WHERE libraianid = '" + userid + "'";
+			}
+			int m = stmt.executeUpdate(UPsql);
+			if (m == 1) {
+				b = true;
+			}
+			stmt.close();
+			con.close();
+			return b;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1.getMessage());
+			return b;
+		}
+	}
+
+	public boolean dellMaster(String userid) {
+		boolean b = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String Dsql = "DELETE FROM librarian WHERE libraianid = '" + userid+ "'";
+			System.out.println(Dsql);
+			int m = stmt.executeUpdate(Dsql);
+			if (m == 1) {
+				b = true;
+			}
+			stmt.close();
+			con.close();
+			return b;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1.getMessage());
+			return b;
+		}
+	}
+	
+	//获取所有参数信息
+	public ArrayList getParamterInfo(String parameterID) {
+		ArrayList paraList = null;
+		ResultSet rs = null;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String pSql = "SELECT * FROM parameter";
+
+			rs = stmt.executeQuery(pSql);
+			paraList = new ArrayList();
+			ParameterInfo parameterInfo = null;
+			int id; // 参数的id号
+			int type; // 读者类别
+			int amount; // 借书数量
+			int period; // 借书天数
+			double dailyfine = 0; // 超期每日罚款金额
+			while (rs.next()) // 输出每条记录
+			{
+				id = rs.getInt("id");
+				type = rs.getInt("type");
+				amount = rs.getInt("amount");
+				period = rs.getInt("period");
+				dailyfine = rs.getDouble("dailyfine");
+				parameterInfo = new ParameterInfo(id, type, amount, period,
+						dailyfine);
+
+				paraList.add(parameterInfo);
+
+			}
+			System.out.println(String.valueOf(dailyfine));
+
+			rs.close();
+			stmt.close();
+			con.close();
+			return paraList;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1);
+			return paraList;
+		}
+	}
+	
+	//更新全部参数
+	public boolean updateParameter(int type, int amount, int period,double dailyfine) {
+		boolean b = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			stmt = con.createStatement();
+			String UPsql = "UPDATE parameter SET amount = " + amount
+					+ ",period = " + period + ",dailyfine = " + dailyfine
+					+ " WHERE type = " + type;
+			int m = stmt.executeUpdate(UPsql);
+
+			if (m ==1) {
+
+				b= true;
+			} else {
+				System.out.print("用户读取信息异常！");
+			}
+			stmt.close();
+			con.close();
+			return b;
+		} catch (SQLException e1) {
+			System.out.print("数据库读异常，" + e1);
+			return b;
+		}
 	}
 }
