@@ -1181,4 +1181,231 @@ public class LibDataAccessor {
 		}
 		return mark;
 	}
+	
+	//获取所有读者的信息
+	public List getReadersInfos(String str) {
+		List list = new ArrayList();
+		String sql = null;
+		ReaderInfo readerInfo = null;
+		System.out.print("接收到：" + str);
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("con：");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!");
+		}
+		try {
+			if ("all".equals(str)) {
+				sql = "select * from reader";
+			} else {
+				sql = "select * from reader where readerid like '%" + str
+						+ "%' or name like '%" + str + "%' or gender like '%"
+						+ str + "%' or address like '%" + str
+						+ "%' or tel like '%" + str + "%' or startdate like '%"
+						+ str + "%' or enddate  like '%" + str
+						+ "%' or type like '%" + str + "%'";
+			}
+			System.out.print("读者SQL：" + sql);
+			Statement st = con.createStatement();
+			ResultSet rs = st.executeQuery(sql);
+			while (rs.next()) {
+				String readerid = rs.getString("readerid"); // 读者编号
+				String passwd = rs.getString("passwd"); // 密码
+				String name = rs.getString("name"); // 姓名
+				Integer age = rs.getInt("age");
+				String gender = rs.getString("gender"); // 性别
+				String address = rs.getString("address"); // 住址
+				String tel = rs.getString("tel"); // 电话
+				String startdate = rs.getString("startdate"); // 开户日期
+				String enddate = rs.getString("enddate"); // 结束日期
+				String strtype = rs.getString("type"); // 读者类型
+				int type = Integer.parseInt(strtype); //
+				String major = rs.getString("major");
+				String depart = rs.getString("depart");
+				readerInfo = new ReaderInfo(readerid, passwd, name, age,
+						gender, address, tel, startdate, enddate, type, major,
+						depart);
+				System.out.print("读者："+readerInfo.getName());
+				list.add(readerInfo);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	//对图书信息进行修改
+	public boolean execBookUpdate(BookDetails bookDetails) {
+		System.out.print("执行图书修改");
+		boolean mark = false;
+		String isbn = bookDetails.getIsbn(); // ISBN号
+		String name = bookDetails.getName(); // 书名
+		String series = bookDetails.getSeries(); // 丛书名
+		String authors = bookDetails.getAuthors(); // 作者
+		String publisher = bookDetails.getPublisher(); // 出版信息,包括出版地点、出版社名、出版日期
+		String size = bookDetails.getSize(); // 图书开本
+		int pages = bookDetails.getPages(); // 页数
+		double price = bookDetails.getPrice(); // 定价
+		String introduction = bookDetails.getIntroduction(); // 图书简介
+		String picture = bookDetails.getPicture(); // 封面图片
+		String clnum = bookDetails.getClnum(); // 图书分类号
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			Statement st = con.createStatement();
+			String sql = "update bookdata set name='" + name + "',series = '"
+					+ series + "',authors = '" + authors + "',publisher = '"
+					+ publisher + "',size='" + size + "',pages =" + pages
+					+ ",price = " + price + ",introduction='" + introduction
+					+ "',picture = '" + picture + "',clnum= '" + clnum
+					+ "' where isbn = '" + isbn + "'";
+			System.out.print("执行的sql为：" + sql);
+			int m = st.executeUpdate(sql);
+			if (m > 0) {
+				mark = true;
+			} else {
+				mark = false;
+			}
+		} catch (SQLException e) {
+			System.out.print("SQL错误" + e.getMessage());
+			mark = false;
+		}
+		return mark;
+	}
+	
+	//修改读者信息
+	public boolean execReaderUpdate(ReaderInfo readerInfo) {
+		System.out.print("执行读者信息修改");
+		boolean mark = false;
+		String readerid = readerInfo.getReadid(); // 读者编号
+		//String passwd = readerInfo.getPasswd(); // 密码
+		String name = readerInfo.getName(); // 姓名
+		int age = readerInfo.getAge();
+		String gender = readerInfo.getGender(); // 性别
+		String address = readerInfo.getAddress(); // 住址
+		String tel = readerInfo.getTel(); // 电话
+		String startdate = readerInfo.getStartdate(); // 开户日期
+		String enddate = readerInfo.getEnddate(); // 结束日期
+		int type = readerInfo.getType(); // 读者类型
+		String major = readerInfo.getMajor();
+		String depart = readerInfo.getDepart();
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			Statement st = con.createStatement();
+			String sql = "update reader set name = '"
+					+ name + "',age = "+age+",gender = '" + gender + "',address = '"
+					+ address + "',tel='" + tel + "',startdate =" + startdate
+					+ ",enddate = " + enddate + ",type=" + type
+					+ ",major = '"+major+"',depart = '"+depart+"' where readerid = '" + readerid + "'";
+			System.out.print("执行的sql为：" + sql);
+			int m = st.executeUpdate(sql);
+			if (m > 0) {
+				mark = true;
+			} else {
+				mark = false;
+			}
+		} catch (SQLException e) {
+			System.out.print("SQL错误" + e.getMessage());
+			mark = false;
+		}
+		return mark;
+	}
+	
+	//馆藏中加入书籍
+	public boolean execBookInfoInsert(BookInLibrary bookInLibrary) {
+		System.out.print("服务器端添加馆藏信息");
+		boolean mark = false;
+		/**
+		 * bookinfo表的信息
+		 */
+		String barCode = bookInLibrary.getBarCode();
+		if(barCode.length()<5){
+			int num = 5 - barCode.length();
+			for(int i=0;i<num;i++){
+				barCode = "0"+barCode;
+			}
+		}
+		String isbn = bookInLibrary.getIsbn();
+		String location = bookInLibrary.getLocation();
+		String introdate =DateFormat.getDateInstance().format(new Date());
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try {
+			stmt = con.createStatement();
+		String sqlBookInfo = "insert into bookinfo(barcode,isbn,status,location,introducetime) values ('"
+			+ barCode
+			+ "','"
+			+ isbn
+			+ "',"
+			+ 1
+			+ ",'"
+			+ location+ "','"+introdate+"')";
+		System.out.print("执行的sqlBookInfo为：" + sqlBookInfo);
+		int n = stmt.executeUpdate(sqlBookInfo);
+		if(n>0){
+			mark = true;
+		}else{
+			mark = false;
+		}
+	} catch (SQLException e) {
+		System.out.print("SQL错误" + e.getMessage());
+		mark = false;
+	}finally{
+		try{
+			stmt.close();
+			con.close();
+			}catch(SQLException e){
+				System.out.print("关闭sql异常"+e.getMessage());
+			}
+	}
+		return  mark;
+	}
+	
+	//读者进行密码修改
+	public boolean execPassModify(String readerid, String pass) {
+		System.out.print("接收到读者编号" + readerid + "\t密码：" + pass);
+		boolean modify = false;
+		try {
+			con = DriverManager.getConnection(dbURL, dbUser, dbPassword);
+			System.out.print("加载数据库连接成功");
+		} catch (SQLException ee) {
+			System.out.print("建立数据库连接失败!" + ee.getMessage());
+		}
+		try{
+			stmt = con.createStatement();
+			String sql = "update reader set passwd = '"+pass+"' where readerid = '"+readerid+"'";
+			System.out.print(sql);
+			int num = stmt.executeUpdate(sql);
+			System.out.print("受影响的行数："+num);
+			if(num>0){
+				modify = true;
+			}
+			else{
+				modify = false;
+			}
+		}catch(SQLException e){
+			System.out.print("修改密码异常"+e.getMessage());
+			modify = false;
+		}finally{
+			try{stmt.close();
+			con.close();
+			}catch(SQLException e){
+				System.out.print("修改密码时关闭sql异常："+e.getMessage());
+			}
+		}
+		return modify;
+	}
 }
