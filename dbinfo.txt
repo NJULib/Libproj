@@ -1,0 +1,26 @@
+#for MS-Access
+dbdriver=sun.jdbc.odbc.JdbcOdbcDriver
+dburl=jdbc:odbc:library
+dbuser=book
+dbpwd=book
+
+
+#for MySQL
+# dbdriver=com.mysql.jdbc.Driver
+# dburl=jdbc:mysql://192.168.0.66:3306/dbname
+# dbuser=username
+# dbpwd=password
+
+
+#for MS-SQLServer
+# dbdriver=oracle.jdbc.driver.OracleDriver
+# dburl=jdbc:microsoft:sqlserver://192.168.0.66:1433;DatabaseName=<dbname>
+# dbuser=username
+# dbpwd=password
+
+
+# for Oracle
+# dbdriver=oracle.jdbc.driver.OracleDriver
+# dburl=jdbc:oracle:thin:@192.168.0.66:1521:dbsid
+# dbuser=username
+# dbpwd=password
