@@ -17,6 +17,7 @@ import serverside.entity.BorrowInfo;
 import serverside.entity.LibraianInfo;
 import serverside.entity.ParameterInfo;
 import serverside.entity.ReaderInfo;
+import util.CurrDateTime;
 import util.DaysInterval;
 
 public class LibDataAccessor {
@@ -1758,5 +1759,10 @@ public class LibDataAccessor {
 			System.out.print("数据库读异常，" + e1);
 			return b;
 		}
+	}
+	
+	protected void log(Object msg) {
+		System.out.println(CurrDateTime.currDateTime() + "LibDataAccessorr类 ："
+				+ msg);
 	}
 }

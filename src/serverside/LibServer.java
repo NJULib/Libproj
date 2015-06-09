@@ -7,7 +7,7 @@ import java.net.Socket;
 import util.*;
 
 /**
- * Ó¦ÓÃ³ÌÐò·þÎñÆ÷¶ËÖ÷Àà£¬Æô¶¯·þÎñÆ÷²¢µÈ´ý¿Í»§µÄÁ¬½Ó 
+ * Ó¦ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½à£¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
  */
 @SuppressWarnings("all")
 public class LibServer implements LibProtocals {
@@ -20,21 +20,21 @@ public class LibServer implements LibProtocals {
 	public LibServer(int thePort) {
 		done = false;
 		try {
-			log("Æô¶¯·þÎñÆ÷ " + thePort);
+			log("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ " + thePort);
 			serverSocket = new ServerSocket(thePort);
 			libDataAccessor = new LibDataAccessor();
-			log("·þÎñÆ÷×¼±¸¾ÍÐ÷!");
+			log("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½!");
 		} catch (IOException e) {
 			log(e);
 			System.exit(1);
 		}
 		while (!done) {
 			try {
-				log("·þÎñÆ÷ÕýµÈ´ýÇëÇó...");
+				log("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ï¿½ï¿½ï¿½ï¿½...");
 				clientSocket = serverSocket.accept();
 				String clientHostName = clientSocket.getInetAddress()
 						.getHostName();
-				log("ÊÕµ½Á¬½Ó: " + clientHostName);
+				log("ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½: " + clientHostName);
 				libOpHandler = new LibOpHandler(clientSocket, libDataAccessor);
 				libOpHandler.start();
 			} catch (IOException e2) {
@@ -44,12 +44,12 @@ public class LibServer implements LibProtocals {
 	}
 
 	protected void log(Object msg) {
-		System.out.println(CurrDateTime.currDateTime() + "LibServerÀà: " + msg);
+		System.out.println(CurrDateTime.currDateTime() + "LibServerï¿½ï¿½: " + msg);
 	}
 
 	public static void main(String[] args) {
 		LibServer theLibServer = null;
-		int port = 6666; // ÉèÖÃÄ¬ÈÏÆô¶¯¶Ë¿ÚºÅ
+		int port = 6666; // ï¿½ï¿½ï¿½ï¿½Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿Úºï¿½
 		if (args.length == 1) {
 			port = Integer.parseInt(args[0]);
 		}
